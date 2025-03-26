@@ -5,7 +5,7 @@
  !**/src/main/**/build/
  !**/src/test/**/build/
  !deploy.yml
- application.yml
+ **/application.yml
  
  ### STS ###
  .apt_generated
