@@ -1,10 +1,9 @@
  HELP.md
  .gradle
  **/build/
- !naegamaja/gradle/wrapper/gradle-wrapper.jar
- !**/src/main/**/build/
- !**/src/test/**/build/
- !deploy.yml
+ **/src/main/**/build/
+ **/src/test/**/build/
+ **/deploy.yml
  **/application.yml
  
  ### STS ###
