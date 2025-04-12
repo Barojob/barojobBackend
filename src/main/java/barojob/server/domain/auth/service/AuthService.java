@@ -51,9 +51,6 @@ public class AuthService {
                 .nickname(found.getNickname())
                 .state(State.LOBBY)
                 .sessionId(sessionId)
-                .roomId("")
-                .isInGame(false)
-                .isInRoom(false)
                 .build();
 
         redisAuthService.saveSession(userSession);
