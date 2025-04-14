@@ -1,8 +1,9 @@
 .gradle/
 build/
 .idea/
-deploy.yml
 application.yml
+application-local.yml
+application-dev.yml
 
 ### STS ###
 .apt_generated
