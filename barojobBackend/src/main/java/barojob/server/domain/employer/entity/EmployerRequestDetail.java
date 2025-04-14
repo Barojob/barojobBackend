@@ -5,13 +5,14 @@ import barojob.server.domain.jobType.entity.JobType;
 import barojob.server.domain.match.entity.Match;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -38,14 +39,15 @@ public class EmployerRequestDetail extends UserStampedEntity {
     @JoinColumn(name = "job_type_id", nullable = false)
     private JobType jobType;
 
+    @OneToMany(mappedBy = "employerRequestDetail", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Match> matches = new ArrayList<>();
+
     @Column(name = "required_count", nullable = false)
     private int requiredCount;
 
-    @OneToMany(mappedBy = "employerRequestDetail", fetch = FetchType.LAZY) // Match 엔티티의 employerRequestDetail 필드에 의해 매핑됨
-    @Builder.Default // Builder 사용 시 초기화
-    private List<Match> matches = new ArrayList<>();
-
     @Column(name = "matched_count")
-    private int matchedCount = 0; // Java 기본값 설정
+    @Builder.Default
+    private int matchedCount = 0;
 
 }

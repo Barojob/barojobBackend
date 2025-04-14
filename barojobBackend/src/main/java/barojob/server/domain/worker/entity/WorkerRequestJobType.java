@@ -4,10 +4,11 @@ import barojob.server.common.timebaseentity.UserStampedEntity;
 import barojob.server.domain.jobType.entity.JobType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

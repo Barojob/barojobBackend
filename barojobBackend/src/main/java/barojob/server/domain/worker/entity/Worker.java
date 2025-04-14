@@ -1,8 +1,11 @@
 package barojob.server.domain.worker.entity;
 import barojob.server.domain.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Check;
 import org.hibernate.annotations.ColumnDefault;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,20 +17,23 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @Entity
-@Table(name = "workers")
+@DiscriminatorValue("WORKER")
 public class Worker extends User {
-    @Column(name = "name", length = 100)
+    @Column(name = "name", length = 10)
     private String name;
 
     @Column(name = "phone_number", nullable = false, unique = true, length = 20)
     private String phoneNumber;
 
-    @Column(name = "priority_score", precision = 10, scale = 2)
-    @ColumnDefault("0.00")
-    private BigDecimal priorityScore = BigDecimal.ZERO;
+    @Min(0)
+    @Max(100)
+    @Column(name = "priority_score")
+    @ColumnDefault("'50'")
+    @Builder.Default
+    private Double priorityScore = 50.0;
 
-    @Column(name = "worker_request")
     @OneToMany(mappedBy = "worker")
+    @Builder.Default
     private List<WorkerRequest> workerRequests = new ArrayList<>();
 
 }

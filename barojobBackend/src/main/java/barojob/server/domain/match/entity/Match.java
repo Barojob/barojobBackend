@@ -6,12 +6,14 @@ import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

@@ -5,6 +5,7 @@ import barojob.server.common.timebaseentity.UserStampedEntity;
 import barojob.server.common.type.RequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,17 +13,17 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "worker_requests",
         indexes = {
-                @Index(name = "idx_wr_date_status_worker", columnList = "request_date, status, worker_id"),
+                @Index(name = "idx_wr_date_status_worker", columnList = "created_at, status, worker_id"),
                 @Index(name = "idx_wr_worker_id", columnList = "worker_id")
         },
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_wr_worker_date", columnNames = {"worker_id", "request_date"})
+                @UniqueConstraint(name = "uk_wr_worker_date", columnNames = {"worker_id", "created_at"})
         })
 public class WorkerRequest extends UserStampedEntity {
 
@@ -35,9 +36,12 @@ public class WorkerRequest extends UserStampedEntity {
     @JoinColumn(name = "worker_id", nullable = false)
     private Worker worker;
 
+    private LocalDate requestDate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     @ColumnDefault("'PENDING'")
+    @Builder.Default
     private RequestStatus status = RequestStatus.PENDING;
 
     @OneToMany(mappedBy = "workerRequest", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

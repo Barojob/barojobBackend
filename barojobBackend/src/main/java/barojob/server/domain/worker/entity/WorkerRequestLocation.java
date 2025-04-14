@@ -4,10 +4,11 @@ import barojob.server.common.timebaseentity.UserStampedEntity;
 import barojob.server.domain.location.entity.Neighborhood;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -32,6 +33,6 @@ public class WorkerRequestLocation extends UserStampedEntity {
     private WorkerRequest workerRequest;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "neighborhood_id", nullable = false) // DB 컬럼명은 그대로 사용
+    @JoinColumn(name = "neighborhood_id", nullable = false)
     private Neighborhood neighborhood;
 }

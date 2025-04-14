@@ -14,13 +14,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "employers")
+@DiscriminatorValue("EMPLOYER")
 public class Employer extends User {
+
     @Column(name = "business_name", nullable = false)
     private String businessName;
 
     @Column(name = "employer_name", nullable = false)
-    private String Name;
+    private String name;
 
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
@@ -28,4 +29,5 @@ public class Employer extends User {
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<EmployerRequest> employerRequests = new ArrayList<>();
+
 }
