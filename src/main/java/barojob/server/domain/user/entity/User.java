@@ -1,18 +1,20 @@
 package barojob.server.domain.user.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import barojob.server.common.timebaseentity.TimeStampedEntity;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 @Getter
+@SuperBuilder
 @Setter
-public class User {
+@DiscriminatorColumn(name = "DTYPE")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Table(name = "users")
+public class User extends TimeStampedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

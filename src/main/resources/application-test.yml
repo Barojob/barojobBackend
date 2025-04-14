@@ -1,0 +1,19 @@
+spring:
+  h2:
+    console:
+      enabled: true
+
+  datasource:
+    url: jdbc:h2:mem:barojob-testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # jpa설정
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties: # property 사용 설정
+      hibernate: # hibernate property 설정
+        format_sql: true
