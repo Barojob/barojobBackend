@@ -18,8 +18,14 @@ jobs:
           script_stop: true
           script: |
             cd /home/ubuntu/barojobBackend
-            git fetch origin CI/CD-Test:CI/CD-Test
-            git checkout CI/CD-Test
+            if git show-ref --verify --quiet refs/heads/CI/CD-Test; then
+              git checkout CI/CD-Test
+              git pull origin CI/CD-Test
+            else
+              git fetch origin CI/CD-Test:CI/CD-Test
+              git checkout CI/CD-Test
+            fi
+            
             ./gradlew clean build
-            sudo fuser -k -n tcp 8080 || true 
+            sudo fuser -k -n tcp 8080 || true
             nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
