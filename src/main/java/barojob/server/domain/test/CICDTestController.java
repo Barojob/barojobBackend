@@ -14,7 +14,7 @@ public class CICDTestController {
 
     @GetMapping("/healthcheck")
     public ResponseEntity<?> health() {
-        return ResponseEntity.ok("헬스체크가 잘 됐다네");
+        return ResponseEntity.ok().build();
     }
 
 
