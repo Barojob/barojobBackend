@@ -9,10 +9,10 @@ public class CICDTestController {
 
     @GetMapping("/")
     public ResponseEntity<?> index() {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("잘 들어와졌다네");
     }
 
-    @GetMapping("/health")
+    @GetMapping("/healthcheck")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok().build();
     }

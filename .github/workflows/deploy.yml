@@ -1,17 +1,35 @@
-name: Github Actions test
+name: Deploy To EC2
 
 on:
   push:
     branches:
-      - main
+      - CI/CD-Test
 
 jobs:
-
-  My-Deploy-Job:
-
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: test
-        run: echo "Hello World"
-
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          envs: APPLICATION_PROPERTIES
+          script_stop: true
+          script: |
+            cd /home/ubuntu/barojobBackend
+            rm -rf src/main/resources/application.yml
+            if git show-ref --verify --quiet refs/heads/CI/CD-Test; then
+              git checkout CI/CD-Test
+              git pull origin CI/CD-Test
+            else
+              git fetch origin CI/CD-Test:CI/CD-Test
+              git checkout CI/CD-Test
+            fi
+            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
+            ./gradlew clean build
+            sudo fuser -k -n tcp 8080 || true 
+            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &

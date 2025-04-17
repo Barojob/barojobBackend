@@ -20,7 +20,7 @@ public class SessionIdAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        boolean isExcludedPath = path.startsWith("/auth") || path.startsWith("/ws") || path.startsWith("/app") || path.startsWith("/topic");
+        boolean isExcludedPath = path.startsWith("/") || path.startsWith("/ws") || path.startsWith("/app") || path.startsWith("/topic");
         boolean isWebSocketUpgrade = "websocket".equalsIgnoreCase(request.getHeader("Upgrade"));
         return isExcludedPath || isWebSocketUpgrade;
     }
