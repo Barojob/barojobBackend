@@ -12,7 +12,7 @@ public class CICDTestController {
         return ResponseEntity.ok("잘 들어와졌다네");
     }
 
-    @GetMapping("/health")
+    @GetMapping("/actuator/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok("헬스체크가 잘 됐다네");
     }
