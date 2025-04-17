@@ -46,37 +46,37 @@ public class SecurityConfig {
         return new SessionIdAuthenticationFilter(redisAuthService);
     }
 
-    @Bean
-    public FilterRegistrationBean<SessionIdAuthenticationFilter> disableAutoRegistration(SessionIdAuthenticationFilter filter) {
-        FilterRegistrationBean<SessionIdAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
-        registration.setEnabled(false);
-        return registration;
-    }
+//    @Bean
+//    public FilterRegistrationBean<SessionIdAuthenticationFilter> disableAutoRegistration(SessionIdAuthenticationFilter filter) {
+//        FilterRegistrationBean<SessionIdAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+//        registration.setEnabled(false);
+//        return registration;
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
       
-          return http
-                  .httpBasic(AbstractHttpConfigurer::disable)
-                  .formLogin(AbstractHttpConfigurer::disable)
-                  .csrf(AbstractHttpConfigurer::disable)
-                  .cors(Customizer.withDefaults())
-                  .authorizeHttpRequests(auth -> auth
-                          .anyRequest().permitAll()
-                  )
-                  .build();
+//          return http
+//                  .httpBasic(AbstractHttpConfigurer::disable)
+//                  .formLogin(AbstractHttpConfigurer::disable)
+//                  .csrf(AbstractHttpConfigurer::disable)
+//                  .cors(Customizer.withDefaults())
+//                  .authorizeHttpRequests(auth -> auth
+//                          .anyRequest().permitAll()
+//                  )
+//                  .build();
 
-//        return http
-//                .cors(Customizer.withDefaults())
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/auth/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(new SessionIdAuthenticationFilter(redisAuthService), UsernamePasswordAuthenticationFilter.class)
-//                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                ).build();
+        return http
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(new SessionIdAuthenticationFilter(redisAuthService), UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                ).build();
     }
 
     @Bean
