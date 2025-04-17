@@ -1,4 +1,4 @@
-name: Github Actions test
+name: Deploy To EC2
 
 on:
   push:
@@ -6,12 +6,20 @@ on:
       - main
 
 jobs:
-
-  My-Deploy-Job:
-
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: test
-        run: echo "Hello World"
-
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            cd /home/ubuntu/instagram-server # 여기 경로는 자신의 EC2에 맞는 경로로 재작성하기
+            git pull origin main
+            ./gradlew clean build
+            sudo fuser -k -n tcp 8080 || true # || true를 붙인 이유는 8080에 종료시킬 프로세스가 없더라도 실패로 처리하지 않기 위해서이다. 
+            # jar 파일을 실행시키는 명령어이다. 그리고 발생하는 로그들을 ./output.log 파일에 남기는 명령어이다.
+            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
