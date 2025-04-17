@@ -49,7 +49,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
       
           return http
+                  .httpBasic(AbstractHttpConfigurer::disable)
+                  .formLogin(AbstractHttpConfigurer::disable)
                   .csrf(AbstractHttpConfigurer::disable)
+                  .cors(Customizer.withDefaults())
                   .authorizeHttpRequests(auth -> auth
                           .anyRequest().permitAll()
                   )
