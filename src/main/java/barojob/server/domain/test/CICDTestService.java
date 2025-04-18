@@ -14,12 +14,10 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class CICDTestService {
-    private final StringRedisTemplate redisTemplate;
 
-    public CICDTestService(StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    private final StringRedisTemplate redisTemplate;
 
     public ResponseEntity<?> testRedis() {
         try {
@@ -28,6 +26,11 @@ public class CICDTestService {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.out.println("에러가 발생했음");
+            if(this.redisTemplate == null){
+                System.out.println("의존성 주입 잘 안됐음");
+            }else{
+                System.out.println("의존성 주입까지는 잘 됐음");
+            }
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("exception", e.getClass().getSimpleName(),
