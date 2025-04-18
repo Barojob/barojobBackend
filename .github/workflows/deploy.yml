@@ -39,11 +39,14 @@ jobs:
           sudo docker build -t barojob-backend:latest .
 
 
-      - name: Stop and remove previous container
+      - name: Stop and remove previous container if exists
         run: |
-          if sudo docker ps -q -f name=barojob-backend >/dev/null; then
-            sudo docker stop barojob-backend
-            sudo docker rm   barojob-backend
+          CONTAINER_ID=$(sudo docker ps -aq -f name=barojob-backend)
+          if [ -n "$CONTAINER_ID" ]; then
+            sudo docker stop "$CONTAINER_ID"
+            sudo docker rm   "$CONTAINER_ID"
+          else
+            echo "기존 컨테이너가 없습니다."
           fi
 
 
