@@ -8,13 +8,19 @@ on:
 jobs:
   deploy:
     runs-on: [self-hosted, linux]
-
-    env:
-      APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          clean: true
+
+      - name: Ensure latest code
+        run: |
+          git fetch origin ${{ github.ref_name }}
+          git reset --hard origin/${{ github.ref_name }}
+          git clean -ffdx
 
       - name: Clean application.yml
         run: rm -f src/main/resources/application.yml
@@ -22,18 +28,12 @@ jobs:
       - name: Apply application.yml from secret
         run: echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
 
-      - name: Switch to CI/CD-Test branch
-        run: |
-          if git show-ref --verify --quiet refs/heads/CI/CD-Test; then
-            git checkout CI/CD-Test
-            git pull origin CI/CD-Test
-          else
-            git fetch origin CI/CD-Test:CI/CD-Test
-            git checkout CI/CD-Test
-          fi
-
       - name: Build with Gradle
         run: ./gradlew clean build
+        working-directory: /home/ubuntu/barojobBackend
+
+      - name: Copy jar to service path
+        run: cp build/libs/server-*.jar /home/ubuntu/barojobBackend/build/libs/server-0.0.1-SNAPSHOT.jar
 
       - name: Reload systemd daemon
         run: sudo systemctl daemon-reload
