@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import java.util.UUID;
 
 @Service
 public class CICDTestService {
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    public CICDTestService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public ResponseEntity<?> testRedis() {
         try {
@@ -28,7 +31,8 @@ public class CICDTestService {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("exception", e.getClass().getSimpleName(),
-                            "message", e.getMessage()));
+                            "message", e.getMessage(),
+                            "debug", "여기서 걸린게 맞음"));
         }
     }
 }
