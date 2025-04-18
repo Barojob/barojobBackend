@@ -1,4 +1,4 @@
-name: Deploy To EC2
+name: Deploy To EC2 (Self-hosted)
 
 on:
   push:
@@ -7,29 +7,36 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]  
+
+    env:
+      APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
+
     steps:
-      - name: SSH로 EC2에 접속하기
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_PROPERTIES
-          script_stop: true
-          script: |
-            cd /home/ubuntu/barojobBackend
-            rm -rf src/main/resources/application.yml
-            if git show-ref --verify --quiet refs/heads/CI/CD-Test; then
-              git checkout CI/CD-Test
-              git pull origin CI/CD-Test
-            else
-              git fetch origin CI/CD-Test:CI/CD-Test
-              git checkout CI/CD-Test
-            fi
-            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
-            ./gradlew clean build
-            sudo fuser -k -n tcp 8080 || true 
-            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Clean application.yml
+        run: rm -f src/main/resources/application.yml
+
+      - name: Apply application.yml from secret
+        run: echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
+
+      - name: Switch to CI/CD-Test branch
+        run: |
+          if git show-ref --verify --quiet refs/heads/CI/CD-Test; then
+            git checkout CI/CD-Test
+            git pull origin CI/CD-Test
+          else
+            git fetch origin CI/CD-Test:CI/CD-Test
+            git checkout CI/CD-Test
+          fi
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      - name: Kill existing application
+        run: sudo fuser -k -n tcp 8080 || true
+
+      - name: Run application
+        run: nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
