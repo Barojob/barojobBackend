@@ -14,9 +14,9 @@ import java.util.UUID;
 
 @Service
 public class CICDTestService {
+
     @Autowired
     private StringRedisTemplate redisTemplate;
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public ResponseEntity<?> testRedis() {
         try {
@@ -24,7 +24,7 @@ public class CICDTestService {
                     .set("test"+UUID.randomUUID(), "test");
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            log.error("Redis 쓰기 실패", e);
+            System.out.println("에러가 발생했음");
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("exception", e.getClass().getSimpleName(),
