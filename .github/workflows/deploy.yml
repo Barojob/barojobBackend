@@ -52,8 +52,8 @@ jobs:
 
       - name: Run new container
         run: |
-          sudo docker run -d \
+            sudo docker run -d \
             --name barojob-backend \
-            -p 8080:8080 \          
+            -p 8080:8080 \
             --restart unless-stopped \
             barojob-backend:latest
