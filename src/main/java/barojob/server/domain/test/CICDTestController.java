@@ -1,15 +1,19 @@
 package barojob.server.domain.test;
 
+import barojob.server.domain.worker.repository.WorkerRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
 public class CICDTestController {
 
     private final CICDTestService cicdTestService;
+    public CICDTestController(CICDTestService cicdTestService) {
+        this.cicdTestService = cicdTestService;
+    }
 
     @GetMapping("/")
     public ResponseEntity<?> index() {
