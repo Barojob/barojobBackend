@@ -30,7 +30,7 @@ public class CICDTestController {
         return cicdTestService.testRedis();
     }
 
-    @GetMapping("/test")
+    @GetMapping("/gogo")
     public ResponseEntity<?> test() {
         return ResponseEntity.ok("4월 18일 테스트는 잘 되고 있다네");
     }
