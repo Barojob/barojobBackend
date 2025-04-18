@@ -17,6 +17,11 @@ public class CICDTestController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/redisTest")
+    public ResponseEntity<?> redisTest() {
+
+    }
+
 
 
 }
