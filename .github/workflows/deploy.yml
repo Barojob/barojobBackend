@@ -9,12 +9,11 @@ jobs:
   deploy:
     runs-on: [self-hosted, linux]
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-        with:
-          ref: 'CI/CD-Test'
-          fetch-depth: 0
-          clean: true
+      - name: Pull latest code
+        run: |
+          cd /home/ubuntu/barojobBackend
+          git fetch --all
+          git reset --hard origin/CI\/CD-Test
 
       - name: Clean application.yml
         run: rm -f src/main/resources/application.yml
