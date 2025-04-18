@@ -3,7 +3,7 @@ name: Deploy To EC2 (Self-hosted)
 on:
   push:
     branches:
-      - CI/CD-Test
+      - 'CI/CD-Test'
 
 jobs:
   deploy:
@@ -12,25 +12,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref_name }}
+          ref: 'CI/CD-Test'
           fetch-depth: 0
           clean: true
-
-      - name: Ensure latest code
-        run: |
-          git fetch origin ${{ github.ref_name }}
-          git reset --hard origin/${{ github.ref_name }}
-          git clean -ffdx
 
       - name: Clean application.yml
         run: rm -f src/main/resources/application.yml
 
       - name: Apply application.yml from secret
         run: echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
-
-      - name: Build with Gradle
-        run: ./gradlew clean build
-        working-directory: /home/ubuntu/barojobBackend
 
       - name: Reload systemd daemon
         run: sudo systemctl daemon-reload
