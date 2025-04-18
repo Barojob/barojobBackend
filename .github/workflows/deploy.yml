@@ -9,23 +9,48 @@ jobs:
   deploy:
     runs-on: [self-hosted, linux]
     steps:
+
       - name: Pull latest code
         run: |
           cd /home/ubuntu/barojobBackend
-          git fetch --all
-          git reset --hard origin/CI\/CD-Test
+          git pull origin CI/CD-Test    # 새 브랜치 내용 반영
+
 
       - name: Clean application.yml
-        run: rm -f src/main/resources/application.yml
+        run: rm -f /home/ubuntu/barojobBackend/src/main/resources/application.yml
 
       - name: Apply application.yml from secret
-        run: echo "$APPLICATION_PROPERTIES" > src/main/resources/application.yml
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
+        run: |
+          echo "$APPLICATION_PROPERTIES" > /home/ubuntu/barojobBackend/src/main/resources/application.yml
 
-      - name: Reload systemd daemon
-        run: sudo systemctl daemon-reload
 
-      - name: Restart barojob service
-        run: sudo systemctl restart barojob.service
+      - name: Build JAR with Gradle
+        run: |
+          cd /home/ubuntu/barojobBackend
+          chmod +x gradlew                  
+          ./gradlew clean build -x test     
 
-      - name: Check service status
-        run: sudo systemctl status barojob.service --no-pager
+
+      - name: Build Docker image
+        run: |
+          cd /home/ubuntu/barojobBackend
+          sudo docker build -t barojob-backend:latest .
+
+
+      - name: Stop and remove previous container
+        run: |
+          if sudo docker ps -q -f name=barojob-backend >/dev/null; then
+            sudo docker stop barojob-backend
+            sudo docker rm   barojob-backend
+          fi
+
+
+      - name: Run new container
+        run: |
+          sudo docker run -d \
+            --name barojob-backend \
+            -p 8080:8080 \          
+            --restart unless-stopped \
+            barojob-backend:latest
