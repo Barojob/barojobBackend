@@ -10,7 +10,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class CICDTestService {
-    StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     public ResponseEntity<?> testRedis() {
         redisTemplate.opsForValue().set("test" + UUID.randomUUID().toString(), "test");
