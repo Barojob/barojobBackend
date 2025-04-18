@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux]  
+    runs-on: [self-hosted, linux]
 
     env:
       APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
@@ -35,8 +35,11 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build
 
-      - name: Kill existing application
-        run: sudo fuser -k -n tcp 8080 || true
+      - name: Reload systemd daemon
+        run: sudo systemctl daemon-reload
 
-      - name: Run application
-        run: nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
+      - name: Restart barojob service
+        run: sudo systemctl restart barojob.service
+
+      - name: Check service status
+        run: sudo systemctl status barojob.service --no-pager
