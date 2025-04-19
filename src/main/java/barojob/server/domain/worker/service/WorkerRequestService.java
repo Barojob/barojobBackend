@@ -40,7 +40,7 @@ public class WorkerRequestService {
     }
 
     @Transactional
-    public WorkerDto.CreateResponse createWorkerRequest(WorkerDto.CreateRequest request) {
+    public WorkerRequestDto.CreateResponse createWorkerRequest(WorkerRequestDto.CreateRequest request) {
         Worker worker = workerRepository.findById(request.getWorkerId())
                 .orElseThrow(() -> new EntityNotFoundException("Worker not found with id: " + request.getWorkerId()));
         List<Neighborhood> neighborhoods = neighborhoodRepository.findByNeighborhoodIdIn(request.getNeighborhoodIds());
@@ -53,7 +53,7 @@ public class WorkerRequestService {
         WorkerRequest workerRequest = request.toEntity(worker, neighborhoods, jobTypes);
         WorkerRequest savedRequest = workerRequestRepository.save(workerRequest);
 
-        return WorkerDto.CreateResponse.builder()
+        return WorkerRequestDto.CreateResponse.builder()
                 .workerRequestId(savedRequest.getWorkerRequestId())
                 .build();
     }
