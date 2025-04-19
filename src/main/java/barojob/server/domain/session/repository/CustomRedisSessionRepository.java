@@ -4,12 +4,13 @@ import barojob.server.domain.session.entity.UserSession;
 import barojob.server.domain.session.state.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 
 @RequiredArgsConstructor
-@Repository
+@Component
 public class CustomRedisSessionRepository {
     private final StringRedisTemplate stringRedisTemplate;
 
