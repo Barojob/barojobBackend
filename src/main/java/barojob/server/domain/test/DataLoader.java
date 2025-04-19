@@ -1,4 +1,4 @@
-package barojob.server.config;
+package barojob.server.domain.test;
 
 import barojob.server.domain.worker.entity.*;
 import barojob.server.domain.jobType.entity.JobType;
