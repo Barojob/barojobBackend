@@ -14,7 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@DiscriminatorValue("EMPLOYER")
+@Table(name = "employers")
+@PrimaryKeyJoinColumn(name = "employer_id")
 public class Employer extends User {
 
     @Column(name = "business_name", nullable = false)

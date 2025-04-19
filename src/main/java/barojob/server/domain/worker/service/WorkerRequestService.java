@@ -4,7 +4,7 @@ import barojob.server.domain.jobType.entity.JobType;
 import barojob.server.domain.jobType.repository.JobTypeRepository;
 import barojob.server.domain.location.entity.Neighborhood;
 import barojob.server.domain.location.repository.NeighborhoodRepository;
-import barojob.server.domain.worker.dto.WorkerDto;
+import barojob.server.domain.worker.dto.WorkerRequestDto;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
 import barojob.server.domain.worker.repository.WorkerRepository;
@@ -26,7 +26,7 @@ public class WorkerRequestService {
     private final JobTypeRepository jobTypeRepository;
 
     @Transactional
-    public WorkerDto.CreateResponse createWorkerRequest(WorkerDto.CreateRequest request) {
+    public WorkerRequestDto.CreateResponse createWorkerRequest(WorkerRequestDto.CreateRequest request) {
         Worker worker = workerRepository.findById(request.getWorkerId())
                 .orElseThrow(() -> new EntityNotFoundException("Worker not found with id: " + request.getWorkerId()));
         List<Neighborhood> neighborhoods = neighborhoodRepository.findByNeighborhoodIdIn(request.getNeighborhoodIds());
@@ -39,7 +39,7 @@ public class WorkerRequestService {
         WorkerRequest workerRequest = request.toEntity(worker, neighborhoods, jobTypes);
         WorkerRequest savedRequest = workerRequestRepository.save(workerRequest);
 
-        return WorkerDto.CreateResponse.builder()
+        return WorkerRequestDto.CreateResponse.builder()
                 .workerRequestId(savedRequest.getWorkerRequestId())
                 .build();
     }

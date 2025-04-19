@@ -17,7 +17,8 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @Entity
-@DiscriminatorValue("WORKER")
+@Table(name = "workers")
+@PrimaryKeyJoinColumn(name = "worker_id")
 public class Worker extends User {
     @Column(name = "name", length = 10)
     private String name;

@@ -1,6 +1,6 @@
 package barojob.server.domain.employer.service;
 
-import barojob.server.domain.employer.dto.EmployerDto;
+import barojob.server.domain.employer.dto.EmployerRequestDto;
 import barojob.server.domain.employer.entity.Employer;
 import barojob.server.domain.employer.entity.EmployerRequest;
 import barojob.server.domain.employer.repository.EmployerRepository;
@@ -28,14 +28,14 @@ public class EmployerRequestService {
     private final JobTypeRepository jobTypeRepository;
 
     @Transactional
-    public EmployerDto.CreateResponse createEmployerRequest(EmployerDto.CreateRequest request) {
+    public EmployerRequestDto.CreateResponse createEmployerRequest(EmployerRequestDto.CreateRequest request) {
         Employer employer = employerRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new EntityNotFoundException("Employer not found with id: " + request.getEmployerId()));
         Neighborhood neighborhood = neighborhoodRepository.findById(request.getLocationNeighborhoodId())
                 .orElseThrow(() -> new EntityNotFoundException("Neighborhood not found with id: " + request.getLocationNeighborhoodId()));
 
         List<Long> jobTypeIds = request.getDetails().stream()
-                .map(EmployerDto.CreateDetail::getJobTypeId)
+                .map(EmployerRequestDto.CreateDetail::getJobTypeId)
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -45,7 +45,7 @@ public class EmployerRequestService {
         EmployerRequest employerRequest = request.toEntity(employer, neighborhood, jobTypeMap);
         EmployerRequest savedRequest = employerRequestRepository.save(employerRequest);
 
-        return EmployerDto.CreateResponse.builder()
+        return EmployerRequestDto.CreateResponse.builder()
                 .requestId(savedRequest.getRequestId())
                 .build();
     }
