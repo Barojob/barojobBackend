@@ -1,3 +1,5 @@
+package barojob.server.domain.worker.repository;
+
 import barojob.server.domain.match.dto.MatchingDataDto;
 
 import java.time.LocalDate;
