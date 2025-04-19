@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @Setter
+@DiscriminatorColumn(name = "DTYPE")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "users")
 public class User extends TimeStampedEntity {

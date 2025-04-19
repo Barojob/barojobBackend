@@ -1,17 +1,59 @@
-name: Github Actions test
+name: Deploy To EC2 (Self-hosted)
 
 on:
   push:
     branches:
-      - main
+      - 'CI/CD-Test'
 
 jobs:
-
-  My-Deploy-Job:
-
-    runs-on: ubuntu-latest
-
+  deploy:
+    runs-on: [self-hosted, linux]
     steps:
-      - name: test
-        run: echo "Hello World"
 
+      - name: Pull latest code
+        run: |
+          cd /home/ubuntu/barojobBackend
+          git pull origin CI/CD-Test    
+
+
+      - name: Clean application.yml
+        run: rm -f /home/ubuntu/barojobBackend/src/main/resources/application.yml
+
+      - name: Apply application.yml from secret
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
+        run: |
+          echo "$APPLICATION_PROPERTIES" > /home/ubuntu/barojobBackend/src/main/resources/application.yml
+
+
+      - name: Build JAR with Gradle
+        run: |
+          cd /home/ubuntu/barojobBackend
+          chmod +x gradlew                  
+          ./gradlew clean build -x test     
+
+
+      - name: Build Docker image
+        run: |
+          cd /home/ubuntu/barojobBackend
+          sudo docker build -t barojob-backend:latest .
+
+
+      - name: Stop and remove previous container if exists
+        run: |
+          CONTAINER_ID=$(sudo docker ps -aq -f name=barojob-backend)
+          if [ -n "$CONTAINER_ID" ]; then
+            sudo docker stop "$CONTAINER_ID"
+            sudo docker rm   "$CONTAINER_ID"
+          else
+            echo "기존 컨테이너가 없습니다."
+          fi
+
+
+      - name: Run new container
+        run: |
+            sudo docker run -d \
+            --name barojob-backend \
+            -p 8080:8080 \
+            --restart unless-stopped \
+            barojob-backend:latest
