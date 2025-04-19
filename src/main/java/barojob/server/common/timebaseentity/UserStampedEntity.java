@@ -1,6 +1,7 @@
 package barojob.server.common.timebaseentity;
 
 import barojob.server.domain.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
@@ -26,16 +27,20 @@ import java.time.LocalDateTime;
 public class UserStampedEntity {
 
     @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime lastModifiedAt;
 
     @CreatedBy
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @ManyToOne(fetch = FetchType.LAZY)
     private User createdBy;
 
     @LastModifiedBy
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @ManyToOne(fetch = FetchType.LAZY)
     private User lastModifiedBy;
 }

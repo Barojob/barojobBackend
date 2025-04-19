@@ -13,7 +13,7 @@ jobs:
       - name: Pull latest code
         run: |
           cd /home/ubuntu/barojobBackend
-          git pull origin CI/CD-Test    # 새 브랜치 내용 반영
+          git pull origin CI/CD-Test    
 
 
       - name: Clean application.yml

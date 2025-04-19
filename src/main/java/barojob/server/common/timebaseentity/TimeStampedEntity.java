@@ -1,5 +1,6 @@
 package barojob.server.common.timebaseentity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
@@ -21,8 +22,10 @@ import java.time.LocalDateTime;
 public class TimeStampedEntity {
 
     @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime lastModifiedAt;
 }

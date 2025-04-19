@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class MatchDto {
+public class MatchingDto {
 
     @Getter
     @Setter
@@ -17,6 +17,7 @@ public class MatchDto {
         private LocalDate targetDate;
         private long totalMatchesMade;
         private List<MatchInfo> matches;
+        private String message;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

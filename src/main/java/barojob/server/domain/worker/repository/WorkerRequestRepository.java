@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
 
-public interface WorkerRequestRepository extends JpaRepository<WorkerRequest, Long> {
+public interface WorkerRequestRepository extends JpaRepository<WorkerRequest, Long>, WorkerRequestRepositoryCustom {
     boolean existsByWorkerAndRequestDate(Worker worker, LocalDate requestDate);
 }
