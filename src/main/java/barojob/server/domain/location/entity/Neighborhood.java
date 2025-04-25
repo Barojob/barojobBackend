@@ -1,6 +1,5 @@
 package barojob.server.domain.location.entity;
 import barojob.server.domain.employer.entity.EmployerRequest;
-import barojob.server.domain.worker.entity.WorkerRequestLocation;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -27,7 +26,4 @@ public class Neighborhood {
     @Builder.Default
     private List<EmployerRequest> employerRequests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "neighborhood", fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<WorkerRequestLocation> workerRequestLocations = new ArrayList<>();
 }

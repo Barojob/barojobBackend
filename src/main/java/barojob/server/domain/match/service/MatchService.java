@@ -46,62 +46,62 @@ public class MatchService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Transactional
-    public MatchingDto.Response performDailyBatchMatching(LocalDateTime executionTime) {
-
-        // 1. 대상 날짜 설정
-        LocalDate targetDate = executionTime.toLocalDate().plusDays(1);
-        log.info("배치 매칭 프로세스 시작 - 대상 날짜: {}", targetDate);
-
-        /*
-        todo: 2. 성능 + 방어적 프로그래밍 관점으로 매칭 대상 업주, 근로자 뽑을 때 이미 매칭된 애들은 아에 제외해서 3,4 파라미터로 넘기고 시작
-                최적화 할때 해봐야 할듯
-        */
-
-        // 3. 매칭 가능한 업주 요청 상세 정보 조회
-        List<MatchingDataDto.EmployerDetailInfo> eligibleDetails = employerRequestDetailRepository.findEligibleDetailInfoForMatching(targetDate);
-        log.debug("매칭 가능 업주 요청 상세 정보 수: {}", eligibleDetails.size());
-        if (eligibleDetails.isEmpty()) {
-            return createEmptyResponse(targetDate, "매칭 대상 업주 요청이 없습니다.");
-        }
-
-        // 4. 매칭 가능한 근로자 정보 조회
-        List<MatchingDataDto.WorkerInfo> eligibleWorkers = workerRequestRepository.findEligibleWorkerInfoForMatching(targetDate);
-        log.debug("매칭 가능 근로자 정보 수: {}", eligibleWorkers.size());
-        if (eligibleWorkers.isEmpty()) {
-            return createEmptyResponse(targetDate, "매칭 대상 근로자 요청이 없습니다.");
-        }
-
-        // 5. 잠재적 매칭 후보 생성 (지역 & 직종 일치하면 PotentailMatch로 일단 싹 다 뽑음)
-        List<PotentialMatch> potentialMatches = generatePotentialMatches(eligibleDetails, eligibleWorkers);
-
-        // 6. 업주 요청 상세별 필요 인원수(spots)만큼 근로자 잠정 선택
-        List<TentativeAssignment> tentativeAssignments = selectTopWorkersForEachDetail(potentialMatches);
-
-        // 7. 근로자별 중복 할당 해결
-        List<FinalMatch> finalSelections = resolveWorkerConflicts(tentativeAssignments);
-
-        // --- 최종 매칭 결과 저장 및 상태 업데이트 ---
-
-        // 8. 최종 선택된 정보로 Match 엔티티 생성 및 저장
-        List<Match> createdMatches = createAndSaveMatches(finalSelections, executionTime);
-
-        if (CollectionUtils.isEmpty(createdMatches)) {
-            log.info("새로 생성된 매칭이 없습니다.");
-            return createEmptyResponse(targetDate, "매칭된 결과가 없습니다.");
-        }
-
-        // 9. 상태 업데이트 (matchedCount 증가, status 변경)
-        updateStatusesAfterMatching(createdMatches);
-
-        // 10. 결과 DTO 생성 및 반환
-        List<MatchingDto.MatchInfo> matchInfos = createdMatches.stream()
-                .map(this::mapMatchToMatchInfo)
-                .collect(Collectors.toList()); // 여기서 Null 필터링은 제거됨
-
-        log.info("총 {}건 매칭 완료 - 대상 날짜: {}", createdMatches.size(), targetDate);
-        return new MatchingDto.Response(targetDate, createdMatches.size(), matchInfos, "배치 매칭이 성공적으로 완료되었습니다.");
-    }
+//    @Transactional
+//    public MatchingDto.Response performDailyBatchMatching(LocalDateTime executionTime) {
+//
+//        // 1. 대상 날짜 설정
+//        LocalDate targetDate = executionTime.toLocalDate().plusDays(1);
+//        log.info("배치 매칭 프로세스 시작 - 대상 날짜: {}", targetDate);
+//
+//        /*
+//        todo: 2. 성능 + 방어적 프로그래밍 관점으로 매칭 대상 업주, 근로자 뽑을 때 이미 매칭된 애들은 아에 제외해서 3,4 파라미터로 넘기고 시작
+//                최적화 할때 해봐야 할듯
+//        */
+//
+//        // 3. 매칭 가능한 업주 요청 상세 정보 조회
+//        List<MatchingDataDto.EmployerDetailInfo> eligibleDetails = employerRequestDetailRepository.findEligibleDetailInfoForMatching(targetDate);
+//        log.debug("매칭 가능 업주 요청 상세 정보 수: {}", eligibleDetails.size());
+//        if (eligibleDetails.isEmpty()) {
+//            return createEmptyResponse(targetDate, "매칭 대상 업주 요청이 없습니다.");
+//        }
+//
+//        // 4. 매칭 가능한 근로자 정보 조회
+//        List<MatchingDataDto.WorkerInfo> eligibleWorkers = workerRequestRepository.findEligibleWorkerInfoForMatching(targetDate);
+//        log.debug("매칭 가능 근로자 정보 수: {}", eligibleWorkers.size());
+//        if (eligibleWorkers.isEmpty()) {
+//            return createEmptyResponse(targetDate, "매칭 대상 근로자 요청이 없습니다.");
+//        }
+//
+//        // 5. 잠재적 매칭 후보 생성 (지역 & 직종 일치하면 PotentailMatch로 일단 싹 다 뽑음)
+//        List<PotentialMatch> potentialMatches = generatePotentialMatches(eligibleDetails, eligibleWorkers);
+//
+//        // 6. 업주 요청 상세별 필요 인원수(spots)만큼 근로자 잠정 선택
+//        List<TentativeAssignment> tentativeAssignments = selectTopWorkersForEachDetail(potentialMatches);
+//
+//        // 7. 근로자별 중복 할당 해결
+//        List<FinalMatch> finalSelections = resolveWorkerConflicts(tentativeAssignments);
+//
+//        // --- 최종 매칭 결과 저장 및 상태 업데이트 ---
+//
+//        // 8. 최종 선택된 정보로 Match 엔티티 생성 및 저장
+//        List<Match> createdMatches = createAndSaveMatches(finalSelections, executionTime);
+//
+//        if (CollectionUtils.isEmpty(createdMatches)) {
+//            log.info("새로 생성된 매칭이 없습니다.");
+//            return createEmptyResponse(targetDate, "매칭된 결과가 없습니다.");
+//        }
+//
+//        // 9. 상태 업데이트 (matchedCount 증가, status 변경)
+//        updateStatusesAfterMatching(createdMatches);
+//
+//        // 10. 결과 DTO 생성 및 반환
+//        List<MatchingDto.MatchInfo> matchInfos = createdMatches.stream()
+//                .map(this::mapMatchToMatchInfo)
+//                .collect(Collectors.toList()); // 여기서 Null 필터링은 제거됨
+//
+//        log.info("총 {}건 매칭 완료 - 대상 날짜: {}", createdMatches.size(), targetDate);
+//        return new MatchingDto.Response(targetDate, createdMatches.size(), matchInfos, "배치 매칭이 성공적으로 완료되었습니다.");
+//    }
 
 
     // 잠재 매칭 후보 생성

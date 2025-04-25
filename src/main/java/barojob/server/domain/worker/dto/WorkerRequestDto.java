@@ -5,7 +5,6 @@ import barojob.server.domain.location.entity.Neighborhood;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
 import barojob.server.domain.worker.entity.WorkerRequestJobType;
-import barojob.server.domain.worker.entity.WorkerRequestLocation;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -47,18 +46,16 @@ public class WorkerRequestDto {
         @NotEmpty(message = "가능 업종 ID 목록은 비어 있을 수 없습니다.")
         private List<Long> jobTypeIds;
 
-        public WorkerRequest toEntity(Worker worker, List<Neighborhood> neighborhoods, List<JobType> jobTypes) {
+        public WorkerRequest toEntity(Worker worker,
+                                      Neighborhood neighborhood,
+                                      List<JobType> jobTypes) {
             WorkerRequest request = WorkerRequest.builder()
                     .worker(worker)
                     .requestDate(this.requestDate)
+                    .neighborhood(neighborhood)
+                    .priorityScore(worker.getPriorityScore())
+                    .neighborhoodId(neighborhood.getNeighborhoodId())
                     .build();
-
-            List<WorkerRequestLocation> locations = neighborhoods.stream()
-                    .map(n -> WorkerRequestLocation.builder()
-                            .workerRequest(request)
-                            .neighborhood(n)
-                            .build())
-                    .collect(Collectors.toList());
 
             List<WorkerRequestJobType> reqJobTypes = jobTypes.stream()
                     .map(jt -> WorkerRequestJobType.builder()
@@ -67,15 +64,14 @@ public class WorkerRequestDto {
                             .build())
                     .collect(Collectors.toList());
 
-            request.setLocations(locations);
             request.setJobTypes(reqJobTypes);
-
             return request;
         }
-    }
 
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-    public static class CreateResponse {
-        private Long workerRequestId;
+        @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+        public static class CreateResponse {
+            private List<Long> workerRequestIds;
+        }
     }
 }
+

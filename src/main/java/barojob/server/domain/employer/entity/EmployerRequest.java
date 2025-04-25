@@ -24,7 +24,7 @@ import java.util.List;
                 @Index(name = "idx_er_location_neighborhood_id", columnList = "location_neighborhood_id"),
                 @Index(name = "idx_er_status", columnList = "status")}
 )
-public class EmployerRequest extends UserStampedEntity {
+public class EmployerRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

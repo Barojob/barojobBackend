@@ -17,15 +17,15 @@ public class MatchScheduler {
     /**
      * 매일 18시 00분 00초에 자동으로 배치 매칭 실행 (한국 시간 기준)
      */
-    @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
-    public void runDailyMatchingJob() {
-        log.info("===== 일일 자동 배치 매칭 시작 =====");
-        try {
-            matchService.performDailyBatchMatching(LocalDateTime.now());
-
-            log.info("===== 일일 자동 배치 매칭 성공적으로 완료 =====");
-        } catch (Exception e) {
-            log.error("!!!!! 일일 자동 배치 매칭 중 심각한 오류 발생 !!!!!", e);
-        }
-    }
+//    @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
+//    public void runDailyMatchingJob() {
+//        log.info("===== 일일 자동 배치 매칭 시작 =====");
+//        try {
+//            matchService.performDailyBatchMatching(LocalDateTime.now());
+//
+//            log.info("===== 일일 자동 배치 매칭 성공적으로 완료 =====");
+//        } catch (Exception e) {
+//            log.error("!!!!! 일일 자동 배치 매칭 중 심각한 오류 발생 !!!!!", e);
+//        }
+//    }
 }

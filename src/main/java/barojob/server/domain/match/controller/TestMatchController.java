@@ -30,24 +30,24 @@ public class TestMatchController {
      * 테스트 데이터 생성 후 매칭 실행 및 결과 반환 API.
      * 기초 데이터(동네, 직종) 자동 생성 시도 포함.
      */
-    @PostMapping("/test-match")
-    public ResponseEntity<MatchingDto.Response> runTestMatch() {
-        log.info("POST /api/match/test-match 요청 수신");
-        try {
-            MatchingDto.Response result = testMatchService.runTestMatching();
-            log.info("테스트 매칭 실행 완료. 결과 반환.");
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("테스트 매칭 실행 중 오류 발생", e);
-            MatchingDto.Response errorResponse = MatchingDto.Response.builder()
-                    .targetDate(LocalDate.now().plusDays(1))
-                    .totalMatchesMade(0)
-                    .matches(List.of())
-                    .message("테스트 매칭 실행 중 오류 발생: " + e.getMessage())
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
+//    @PostMapping("/test-match")
+//    public ResponseEntity<MatchingDto.Response> runTestMatch() {
+//        log.info("POST /api/match/test-match 요청 수신");
+//        try {
+//            MatchingDto.Response result = testMatchService.runTestMatching();
+//            log.info("테스트 매칭 실행 완료. 결과 반환.");
+//            return ResponseEntity.ok(result);
+//        } catch (Exception e) {
+//            log.error("테스트 매칭 실행 중 오류 발생", e);
+//            MatchingDto.Response errorResponse = MatchingDto.Response.builder()
+//                    .targetDate(LocalDate.now().plusDays(1))
+//                    .totalMatchesMade(0)
+//                    .matches(List.of())
+//                    .message("테스트 매칭 실행 중 오류 발생: " + e.getMessage())
+//                    .build();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+//        }
+//    }
 
     /**
      * 특정 날짜에 생성된 매칭 결과 조회 API.

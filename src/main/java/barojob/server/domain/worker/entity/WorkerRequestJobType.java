@@ -6,21 +6,32 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Getter
-@Setter
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "worker_request_job_types",
+@Table(
+        name = "worker_request_job_types",
         indexes = {
-                @Index(name = "idx_wrjt_request_job", columnList = "worker_request_id, job_type_id"),
-                @Index(name = "idx_wrjt_job_request", columnList = "job_type_id, worker_request_id"),
+                @Index(
+                        name = "idx_wrjt_request_job",
+                        columnList = "worker_request_id, neighborhood_id, job_type_id"
+                ),
+                @Index(
+                        name = "idx_wrjt_job_request",
+                        columnList = "job_type_id, worker_request_id, neighborhood_id"
+                ),
                 @Index(name = "idx_wrjt_job_type_id", columnList = "job_type_id")
         },
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_wrjt_request_job", columnNames = {"worker_request_id", "job_type_id"})
-        })
+                @UniqueConstraint(
+                        name = "uk_wrjt_request_job",
+                        columnNames = {"worker_request_id", "neighborhood_id", "job_type_id"}
+                )
+        }
+)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 public class WorkerRequestJobType extends UserStampedEntity {
 
     @Id
@@ -29,10 +40,25 @@ public class WorkerRequestJobType extends UserStampedEntity {
     private Long workerRequestJobTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "worker_request_id", nullable = false)
+    @JoinColumns({
+            @JoinColumn(
+                    name = "worker_request_id",
+                    referencedColumnName = "worker_request_id",
+                    foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+            ),
+            @JoinColumn(
+                    name = "neighborhood_id",
+                    referencedColumnName = "neighborhood_id",
+                    foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+            )
+    })
     private WorkerRequest workerRequest;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_type_id", nullable = false)
+    @JoinColumn(
+            name = "job_type_id",
+            nullable = false,
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private JobType jobType;
 }

@@ -42,7 +42,18 @@ public class Match extends TimeStampedEntity {
     private EmployerRequestDetail employerRequestDetail;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "worker_request_id", nullable = false)
+    @JoinColumns({
+            @JoinColumn(
+                    name = "worker_request_id",
+                    referencedColumnName = "worker_request_id",
+                    foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+            ),
+            @JoinColumn(
+                    name = "neighborhood_id",
+                    referencedColumnName = "neighborhood_id",
+                    foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+            )
+    })
     private WorkerRequest workerRequest;
 
     @ManyToOne(fetch = FetchType.LAZY)
