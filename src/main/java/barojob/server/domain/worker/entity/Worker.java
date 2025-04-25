@@ -20,7 +20,6 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name = "user_id")
 @DiscriminatorValue("WORKER")
 @Table(name = "workers")
-@Builder
 public class Worker extends User {
     @Column(name = "name", length = 10)
     private String name;

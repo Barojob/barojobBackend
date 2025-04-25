@@ -60,7 +60,7 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                 .join(wr.jobTypes, jr)
                 .join(wr.worker, w)
                 .where(
-                        wr.neighborhood.neighborhoodId.eq(neighborhoodId),
+                        wr.neighborhoodId.eq(neighborhoodId),
                         wr.status.eq(RequestStatus.PENDING),
                         wr.requestDate.eq(today),
                         jr.jobType.jobTypeId.eq(jobTypeId)
@@ -75,7 +75,7 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                 .from(wr)
                 .join(wr.jobTypes, jr)
                 .where(
-                        wr.neighborhood.neighborhoodId.eq(neighborhoodId),
+                        wr.neighborhoodId.eq(neighborhoodId),
                         wr.status.eq(RequestStatus.PENDING),
                         wr.requestDate.eq(today),
                         jr.jobType.jobTypeId.eq(jobTypeId)

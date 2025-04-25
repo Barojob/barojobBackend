@@ -52,7 +52,6 @@ public class WorkerRequestDto {
             WorkerRequest request = WorkerRequest.builder()
                     .worker(worker)
                     .requestDate(this.requestDate)
-                    .neighborhood(neighborhood)
                     .priorityScore(worker.getPriorityScore())
                     .neighborhoodId(neighborhood.getNeighborhoodId())
                     .build();

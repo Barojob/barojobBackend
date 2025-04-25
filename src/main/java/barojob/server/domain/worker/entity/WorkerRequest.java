@@ -44,15 +44,6 @@ public class WorkerRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "neighborhood_id",
-            insertable = false,
-            updatable   = false,
-            foreignKey  = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    private Neighborhood neighborhood;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
             name = "worker_id",
             nullable = false,
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
@@ -63,11 +54,13 @@ public class WorkerRequest {
     private LocalDate requestDate;
 
     @ColumnDefault("50")
+    @Builder.Default
     private Double priorityScore = 50.0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     @ColumnDefault("'PENDING'")
+    @Builder.Default
     private RequestStatus status = RequestStatus.PENDING;
 
     @OneToMany(
