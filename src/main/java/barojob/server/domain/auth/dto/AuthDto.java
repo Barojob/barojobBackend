@@ -1,6 +1,7 @@
 package barojob.server.domain.auth.dto;
 
 import barojob.server.domain.user.dto.UserDto;
+import barojob.server.domain.worker.entity.Worker;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,17 +16,31 @@ public class AuthDto {
     @Data
     @Builder
     public static class SignInRequest{
-        private String email;
-        private String password;
-
-        public static SignInRequest of(String email, String password){
+        private String verificationCode;
+        private String phoneNumber;
+        private String role;
+        public static SignInRequest of(String verificationCode,String phoneNumber,String role){
             return SignInRequest.builder()
-                    .email(email)
-                    .password(password)
+                    .verificationCode(verificationCode)
+                    .phoneNumber(phoneNumber)
+                    .role(role)
                     .build();
         }
     }
-
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Builder
+    public static class SignInVerificateRequest{
+        private String role;
+        private String phoneNumber;
+        public static SignInVerificateRequest of(String phoneNumber,String role){
+            return SignInVerificateRequest.builder()
+                    .phoneNumber(phoneNumber)
+                    .role(role)
+                    .build();
+        }
+    }
     @AllArgsConstructor
     @NoArgsConstructor
     @Data
@@ -37,6 +52,12 @@ public class AuthDto {
 
         private String password;
 
+        //worker, employer signUp
+        private String phoneNumber;
+
+        private String name;
+
+        private String businessName;
         public User toEntity(PasswordEncoder encoder){
             return User.builder()
                     .email(email)
@@ -45,11 +66,15 @@ public class AuthDto {
                     .build();
         }
 
-        public static SignUpRequest of(String email, String nickname, String password){
+        //Worker, Employer SignUpRequest
+        public static SignUpRequest of(String email, String nickname, String password, String phoneNumber,String name,String businessName){
             return SignUpRequest.builder()
                     .email(email)
                     .nickname(nickname)
                     .password(password)
+                    .phoneNumber(phoneNumber)
+                    .name(name)
+                    .businessName(businessName)
                     .build();
         }
     }
@@ -68,7 +93,6 @@ public class AuthDto {
                     .sessionId(sessionId)
                     .build();
         }
-
     }
 
     @AllArgsConstructor
