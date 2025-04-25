@@ -1,9 +1,12 @@
--- 1) users
+-- 1) users 테이블 (수정)
 CREATE TABLE IF NOT EXISTS `users` (
-                                       `id` BIGINT NOT NULL AUTO_INCREMENT,
-                                       `email` VARCHAR(255),
-                                       `nickname` VARCHAR(255),
-                                       `password` VARCHAR(255),
+                                       `id`              BIGINT         NOT NULL AUTO_INCREMENT,
+                                       `dtype`           VARCHAR(31)    NOT NULL,
+                                       `email`           VARCHAR(255),
+                                       `nickname`        VARCHAR(255),
+                                       `password`        VARCHAR(255),
+                                       `created_at`      DATETIME(6),
+                                       `last_modified_at` DATETIME(6),
                                        PRIMARY KEY (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
@@ -33,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
 CREATE TABLE IF NOT EXISTS `employers` (
                                            `user_id` BIGINT NOT NULL,
                                            `business_name` VARCHAR(255) NOT NULL,
-                                           `name` VARCHAR(255) NOT NULL,
+                                           `employer_name` VARCHAR(255) NOT NULL,
                                            `phone_number` VARCHAR(20),
                                            PRIMARY KEY (`user_id`),
                                            CONSTRAINT `fk_employers_user`
@@ -105,10 +108,10 @@ CREATE TABLE IF NOT EXISTS `employer_request_details` (
 -- 8) worker_requests (파티셔닝 200개, neighborhoods FK 제거)
 CREATE TABLE IF NOT EXISTS `worker_requests` (
                                                  `worker_request_id` BIGINT NOT NULL AUTO_INCREMENT,
-                                                 `neighborhood_id`   BIGINT NOT NULL,
-                                                 `worker_id`         BIGINT NOT NULL,
-                                                 `request_date`      DATE    NOT NULL,
-                                                 `priority_score`    DOUBLE  DEFAULT 50,
+                                                 `neighborhood_id` BIGINT NOT NULL,
+                                                 `worker_id` BIGINT NOT NULL,
+                                                 `request_date` DATE NOT NULL,
+                                                 `priority_score` DOUBLE DEFAULT 50,
                                                  `status` ENUM(
                                                      'PENDING',
                                                      'PROCESSING',
@@ -156,14 +159,10 @@ CREATE TABLE IF NOT EXISTS `matches` (
                                          `worker_id` BIGINT NOT NULL,
                                          `match_datetime` DATETIME(6) NOT NULL,
                                          PRIMARY KEY (`match_id`),
-                                         KEY `idx_matches_detail_worker`
-                                             (`employer_request_detail_id`,`worker_id`),
-                                         KEY `idx_matches_worker_date`
-                                             (`worker_id`,`match_datetime`),
-                                         KEY `idx_matches_date_time_erd`
-                                             (`match_datetime`,`employer_request_detail_id`),
-                                         KEY `idx_matches_date_time_wr`
-                                             (`match_datetime`,`worker_request_id`),
+                                         KEY `idx_matches_detail_worker` (`employer_request_detail_id`,`worker_id`),
+                                         KEY `idx_matches_worker_date` (`worker_id`,`match_datetime`),
+                                         KEY `idx_matches_date_time_erd` (`match_datetime`,`employer_request_detail_id`),
+                                         KEY `idx_matches_date_time_wr` (`match_datetime`,`worker_request_id`),
                                          KEY `idx_matches_erd_id` (`employer_request_detail_id`),
                                          KEY `idx_matches_wr_id` (`worker_request_id`),
                                          KEY `idx_matches_worker_id` (`worker_id`),
@@ -173,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `matches` (
                                                  REFERENCES `employer_request_details` (`request_detail_id`),
                                          CONSTRAINT `fk_matches_worker`
                                              FOREIGN KEY (`worker_id`) REFERENCES `workers` (`user_id`)
-    -- composite FK (worker_request_id, neighborhood_id) 는 애플리케이션 레벨에서 NO_CONSTRAINT 처리
+    -- (`worker_request_id`, `neighborhood_id`) 복합 FK는 애플리케이션 레벨에서 처리
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;

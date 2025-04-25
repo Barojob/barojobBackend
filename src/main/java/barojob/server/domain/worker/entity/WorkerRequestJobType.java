@@ -32,7 +32,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class WorkerRequestJobType extends UserStampedEntity {
+public class WorkerRequestJobType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

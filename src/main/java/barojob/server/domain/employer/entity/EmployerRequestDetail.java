@@ -24,7 +24,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_erd_request_job", columnNames = {"request_id", "job_type_id"})
         })
-public class EmployerRequestDetail extends UserStampedEntity {
+public class EmployerRequestDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

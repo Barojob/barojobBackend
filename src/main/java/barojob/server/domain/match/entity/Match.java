@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_match_worker_date", columnNames = {"worker_id", "match_datetime"})
         })
-public class Match extends TimeStampedEntity {
+public class Match {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
