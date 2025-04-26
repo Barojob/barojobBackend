@@ -35,6 +35,10 @@ jobs:
           cd /home/ubuntu/barojobBackend
           sudo docker build -t barojob-backend:latest .
 
+      - name: Create Docker network if not exists
+        run: |
+          sudo docker network create barojob-net || true
+
       - name: Stop and remove previous app container if exists
         run: |
           CONTAINER_ID=$(sudo docker ps -aq -f name=barojob-backend)
@@ -55,14 +59,17 @@ jobs:
           fi
           sudo docker run -d \
             --name redis-local \
+            --network barojob-net \
             -p 6379:6379 \
             --restart unless-stopped \
             redis:latest
 
       - name: Run new app container
         run: |
+          sudo docker rm -f barojob-backend || true
           sudo docker run -d \
             --name barojob-backend \
+            --network barojob-net \
             -p 8080:8080 \
             --restart unless-stopped \
             barojob-backend:latest
