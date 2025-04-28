@@ -9,7 +9,6 @@ import barojob.server.domain.worker.entity.QWorkerRequestJobType;
 import barojob.server.domain.worker.entity.WorkerRequestId;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,12 +21,9 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static barojob.server.domain.jobType.entity.QJobType.jobType;
-import static barojob.server.domain.location.entity.QNeighborhood.neighborhood;
 import static barojob.server.domain.worker.entity.QWorker.worker;
 import static barojob.server.domain.worker.entity.QWorkerRequest.workerRequest;
 import static barojob.server.domain.worker.entity.QWorkerRequestJobType.workerRequestJobType;
-import static com.querydsl.jpa.JPAExpressions.selectOne;
 
 @RequiredArgsConstructor
 public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositoryCustom {
@@ -37,11 +33,11 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
     @Override
     public Page<ManualMatchingResponse> findWorkerRequestPageByNeighborhoodAndJobType(
             Long neighborhoodId,
-            Long jobTypeId,             // 단일 jobTypeId
+            Long jobTypeId, // 단일 jobTypeId
             Pageable pageable) {
 
         QWorkerRequest wr = QWorkerRequest.workerRequest;
-        QWorker w  = QWorker.worker;
+        QWorker w = QWorker.worker;
         QWorkerRequestJobType jr = QWorkerRequestJobType.workerRequestJobType;
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
@@ -123,6 +119,7 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
             WorkerRequestId currentKey = new WorkerRequestId(wrId, nId);
             Set<Long> jobTypeIds = jobTypeIdsMap.getOrDefault(currentKey, Collections.emptySet());
 
+            // 이전 코드 원본에는 null 체크가 없었으므로 그대로 복원
             return new MatchingDataDto.WorkerInfo(wrId, wId, score, nId, jobTypeIds);
         }).collect(Collectors.toList());
     }
@@ -138,12 +135,14 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                 )
                 .from(workerRequestJobType)
                 .where(
+                        // 원본 코드의 IN 절 유지
                         workerRequestJobType.workerRequest.workerRequestId.in(
                                 compositeKeys.stream().map(WorkerRequestId::getWorkerRequestId).collect(Collectors.toSet())
                         )
                 )
                 .fetch();
 
+        // 원본 코드의 Java 필터링 로직 유지
         Set<WorkerRequestId> validKeys = new HashSet<>(compositeKeys);
         return results.stream()
                 .filter(tuple -> {
@@ -161,5 +160,4 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                         Collectors.mapping(tuple -> tuple.get(workerRequestJobType.jobType.jobTypeId), Collectors.toSet())
                 ));
     }
-
 }
