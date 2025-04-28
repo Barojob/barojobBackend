@@ -19,6 +19,6 @@ public interface WorkerRequestRepositoryCustom {
             Pageable pageable
     );
   
-    //List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate);
+    List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate);
 }
 
