@@ -48,6 +48,11 @@ public class TestMatchController {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
 //        }
 //    }
+    @PostMapping("/run")
+    public ResponseEntity<MatchingDto.Response> runFullTestMatch() {
+        MatchingDto.Response response = matchService.performDailyBatchMatching(LocalDateTime.now().minusDays(1));
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * 특정 날짜에 생성된 매칭 결과 조회 API.

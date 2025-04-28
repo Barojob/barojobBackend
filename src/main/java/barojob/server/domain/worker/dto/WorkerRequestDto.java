@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class WorkerRequestDto {
-  
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -67,10 +67,15 @@ public class WorkerRequestDto {
             return request;
         }
 
-        @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-        public static class CreateResponse {
-            private List<Long> workerRequestIds;
-        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CreateResponse {
+        private List<Long> workerRequestIds;
     }
 }
 
