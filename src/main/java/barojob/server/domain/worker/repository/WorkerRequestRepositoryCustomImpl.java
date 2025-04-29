@@ -6,21 +6,21 @@ import barojob.server.domain.worker.dto.WorkerRequestDto.ManualMatchingResponse;
 import barojob.server.domain.worker.entity.QWorker;
 import barojob.server.domain.worker.entity.QWorkerRequest;
 import barojob.server.domain.worker.entity.QWorkerRequestJobType;
-import barojob.server.domain.worker.entity.WorkerRequestId;
-import com.querydsl.core.Tuple;
+import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import static barojob.server.domain.jobType.entity.QJobType.jobType;
 import static barojob.server.domain.worker.entity.QWorker.worker;
 import static barojob.server.domain.worker.entity.QWorkerRequest.workerRequest;
 import static barojob.server.domain.worker.entity.QWorkerRequestJobType.workerRequestJobType;
@@ -85,79 +85,30 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
 
     @Override
     public List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate) {
-        List<Tuple> basicInfoTuples = queryFactory
+        Map<Long, MatchingDataDto.WorkerInfo> result = queryFactory
                 .select(
                         workerRequest.workerRequestId,
+                        worker.id,
+                        workerRequest.priorityScore,
                         workerRequest.neighborhoodId,
-                        workerRequest.worker.id,
-                        workerRequest.priorityScore
-                )
-                .from(workerRequest)
+                        jobType.jobTypeId
+                ).from(workerRequest)
                 .join(workerRequest.worker, worker)
+                .join(workerRequest.jobTypes, workerRequestJobType)
+                .join(workerRequestJobType.jobType, jobType)
                 .where(
                         workerRequest.requestDate.eq(targetDate),
                         workerRequest.status.eq(RequestStatus.PENDING)
-                )
-                .fetch();
+                ).transform(GroupBy.groupBy(workerRequest.workerRequestId).as(
+                        Projections.constructor(MatchingDataDto.WorkerInfo.class,
+                                workerRequest.workerRequestId,
+                                worker.id,
+                                workerRequest.priorityScore,
+                                workerRequest.neighborhoodId,
+                                GroupBy.set(jobType.jobTypeId))
 
-        if (basicInfoTuples.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<WorkerRequestId> compositeKeys = basicInfoTuples.stream()
-                .map(t -> new WorkerRequestId(t.get(workerRequest.workerRequestId), t.get(workerRequest.neighborhoodId)))
-                .distinct()
-                .collect(Collectors.toList());
-
-        Map<WorkerRequestId, Set<Long>> jobTypeIdsMap = findJobTypeIdsByCompositeKeysGrouped(compositeKeys);
-
-        return basicInfoTuples.stream().map(tuple -> {
-            Long wrId = tuple.get(workerRequest.workerRequestId);
-            Long nId = tuple.get(workerRequest.neighborhoodId);
-            Long wId = tuple.get(workerRequest.worker.id);
-            Double score = tuple.get(workerRequest.priorityScore);
-            WorkerRequestId currentKey = new WorkerRequestId(wrId, nId);
-            Set<Long> jobTypeIds = jobTypeIdsMap.getOrDefault(currentKey, Collections.emptySet());
-
-            // 이전 코드 원본에는 null 체크가 없었으므로 그대로 복원
-            return new MatchingDataDto.WorkerInfo(wrId, wId, score, nId, jobTypeIds);
-        }).collect(Collectors.toList());
-    }
-
-    private Map<WorkerRequestId, Set<Long>> findJobTypeIdsByCompositeKeysGrouped(List<WorkerRequestId> compositeKeys) {
-        if (CollectionUtils.isEmpty(compositeKeys)) return Collections.emptyMap();
-
-        List<Tuple> results = queryFactory
-                .select(
-                        workerRequestJobType.workerRequest.workerRequestId,
-                        workerRequestJobType.workerRequest.neighborhoodId,
-                        workerRequestJobType.jobType.jobTypeId
-                )
-                .from(workerRequestJobType)
-                .where(
-                        // 원본 코드의 IN 절 유지
-                        workerRequestJobType.workerRequest.workerRequestId.in(
-                                compositeKeys.stream().map(WorkerRequestId::getWorkerRequestId).collect(Collectors.toSet())
-                        )
-                )
-                .fetch();
-
-        // 원본 코드의 Java 필터링 로직 유지
-        Set<WorkerRequestId> validKeys = new HashSet<>(compositeKeys);
-        return results.stream()
-                .filter(tuple -> {
-                    WorkerRequestId key = new WorkerRequestId(
-                            tuple.get(workerRequestJobType.workerRequest.workerRequestId),
-                            tuple.get(workerRequestJobType.workerRequest.neighborhoodId)
-                    );
-                    return validKeys.contains(key);
-                })
-                .collect(Collectors.groupingBy(
-                        tuple -> new WorkerRequestId(
-                                tuple.get(workerRequestJobType.workerRequest.workerRequestId),
-                                tuple.get(workerRequestJobType.workerRequest.neighborhoodId)
-                        ),
-                        Collectors.mapping(tuple -> tuple.get(workerRequestJobType.jobType.jobTypeId), Collectors.toSet())
                 ));
+
+        return new ArrayList<>(result.values());
     }
 }

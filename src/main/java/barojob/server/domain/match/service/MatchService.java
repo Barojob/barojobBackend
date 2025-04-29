@@ -7,18 +7,18 @@ import barojob.server.domain.employer.entity.EmployerRequestDetail;
 import barojob.server.domain.employer.repository.EmployerRequestDetailRepository;
 import barojob.server.domain.jobType.entity.JobType;
 import barojob.server.domain.location.entity.Neighborhood;
-import barojob.server.domain.location.repository.NeighborhoodRepository; // Neighborhood 조회 위해 추가
+import barojob.server.domain.location.repository.NeighborhoodRepository;
 import barojob.server.domain.match.dto.MatchingDataDto;
 import barojob.server.domain.match.dto.MatchingDto;
 import barojob.server.domain.match.entity.Match;
 import barojob.server.domain.match.repository.MatchRepository;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
-import barojob.server.domain.worker.entity.WorkerRequestId; // WorkerRequestId import
+import barojob.server.domain.worker.entity.WorkerRequestId;
 import barojob.server.domain.worker.repository.WorkerRequestRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException; // 명시적 import
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 import static barojob.server.domain.employer.entity.QEmployerRequest.employerRequest;
 import static barojob.server.domain.employer.entity.QEmployerRequestDetail.employerRequestDetail;
@@ -66,7 +65,7 @@ public class MatchService {
             return createEmptyResponse(targetDate, "매칭 대상 업주 요청이 없습니다.");
         }
 
-        // 4. 매칭 가능한 근로자 정보 조회 (리포지토리 구현 변경 필요, DTO 구조는 동일)
+        // 4. 매칭 가능한 근로자 정보 조회
         List<MatchingDataDto.WorkerInfo> eligibleWorkers = workerRequestRepository.findEligibleWorkerInfoForMatching(targetDate); //
         log.debug("매칭 가능 근로자 정보 수: {}", eligibleWorkers.size());
         if (eligibleWorkers.isEmpty()) {
