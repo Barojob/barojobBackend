@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import barojob.server.domain.user.entity.User;
+import org.hibernate.annotations.Check;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class AuthDto {
@@ -78,7 +79,6 @@ public class AuthDto {
                     .build();
         }
     }
-
     @AllArgsConstructor
     @NoArgsConstructor
     @Data

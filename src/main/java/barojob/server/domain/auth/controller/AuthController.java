@@ -20,47 +20,36 @@ public class AuthController {
     private final CustomRedisSessionRepository customRedisSessionRepository;
     private final SmsService smsService;
 
-    @PostMapping(value="/checkUser",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public boolean checkUser(@RequestParam String phoneNumber,@RequestParam String role){
-        AuthDto.SignInVerificateRequest request=AuthDto.SignInVerificateRequest.of(phoneNumber, role);
+    //checkUser : sign-in 전 존재하는 유저인지 phoneNumber로 확인 후 인증번호 발송
+    @PostMapping(value="/checkUser",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public boolean checkUser(@RequestBody AuthDto.SignInVerificateRequest request){
         boolean isValid= authService.isValidUser(request);
         if(!isValid){
             throw new RestException(ErrorCode.USER_NOT_FOUND);
         }
         else{
-            smsService.saveVerificationCode(phoneNumber);
+            smsService.saveVerificationCode(request.getPhoneNumber());
         }
         return isValid;
 
     }
-    @PostMapping(value = "/sign-in", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public AuthDto.SessionIdResponse signIn(@RequestParam String verificationCode,@RequestParam String phoneNumber,@RequestParam String role) {
-        boolean isValid=smsService.verifyCode(phoneNumber,verificationCode);
-        if(!isValid){
-            //인증번호 재입력하세요
-            System.out.println("Wrong verificationCode");
-            throw new RestException(ErrorCode.AUTH_VERIFICATION_CODE_MISMATCH);
 
+    //sign-in : 인증번호 검사 및 로그인
+    @PostMapping(value = "/sign-in",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public AuthDto.SessionIdResponse signIn(@RequestBody AuthDto.SignInRequest request) {
+        boolean isValid=smsService.verifyCode(request.getPhoneNumber(),request.getVerificationCode());
+        if(!isValid){
+            throw new RestException(ErrorCode.AUTH_VERIFICATION_CODE_MISMATCH);
         }
-        AuthDto.SignInRequest request = AuthDto.SignInRequest.of(verificationCode,phoneNumber,role);
         return authService.signIn(request);
     }
 
-    //회원가입 : 유태민
-    @PostMapping(value = "/sign-up", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public AuthDto.SignUpResponse signUp(@RequestParam String email,
-                                               @RequestParam String nickname,
-                                               @RequestParam String password,
-                                               @RequestParam String phoneNumber,
-                                               @RequestParam String name,
-                                                @RequestParam(required = false) String businessName) {
-        boolean isEmployer = businessName!=null &&!businessName.isBlank();
-
-        AuthDto.SignUpRequest request = AuthDto.SignUpRequest.of(email, nickname, password,phoneNumber,name,businessName);
+    //sign-up : 회원가입
+    @PostMapping(value = "/sign-up", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public AuthDto.SignUpResponse signUp(@RequestBody AuthDto.SignUpRequest request) {
+        boolean isEmployer = request.getBusinessName()!=null &&!request.getBusinessName().isBlank();
         return authService.signUp(request,isEmployer);
-
     }
-
     @PostMapping("/sign-out")
     public void signOut(@RequestHeader String authorization) {
         authService.logout(authorization);
