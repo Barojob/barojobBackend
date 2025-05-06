@@ -126,7 +126,8 @@ public class AuthService {
                     .build();
         }
 
-        //User saved = userRepository.save(toSave);
+        User saved = userRepository.save(toSave);
+
         return AuthDto.SignUpResponse.builder()
                 .user(UserDto.UserResponse.from(saved))
                 .build();

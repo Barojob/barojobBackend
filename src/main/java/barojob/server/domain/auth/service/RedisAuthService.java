@@ -27,6 +27,7 @@ public class RedisAuthService {
     public void saveSession(UserSession userSession) {
         redisSessionRepository.save(userSession);
         customRedisSessionRepository.saveNicknameToSession(userSession.getNickname(), userSession.getSessionId());
+        customRedisSessionRepository.setTTLToSession(userSession.getNickname(), userSession.getSessionId());
     }
 
     public void deleteSessionId(String sessionId) {
