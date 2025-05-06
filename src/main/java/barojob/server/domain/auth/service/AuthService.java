@@ -37,14 +37,17 @@ public class AuthService {
     private final RedisSessionRepository redisSessionRepository;
     private final SmsService smsService;
 
+    private final String worker="WORKER";
+    private final String employer="EMPLOYER";
+
     @Transactional
     //로그인 시, 인증번호 발송 전 존재하는 유저인지 확인
     public boolean isValidUser(AuthDto.SignInVerificateRequest request){
         boolean isFound=false;
-        if(request.getRole().equals("Worker")) {
+        if(request.getRole().equals(worker)) {
             isFound = workerRepository.existsByPhoneNumber(request.getPhoneNumber());
         }
-        else if(request.getRole().equals("Employer")){
+        else if(request.getRole().equals(employer)){
             isFound = employerRepository.existsByPhoneNumber(request.getPhoneNumber());
         }
         return isFound;
@@ -52,12 +55,12 @@ public class AuthService {
     @Transactional
     public AuthDto.SessionIdResponse signIn(AuthDto.SignInRequest request) {
         Long userId=null;
-        if(request.getRole().equals("Worker")){
+        if(request.getRole().equals(worker)){
             Worker foundWorker=workerRepository.findWorkerByPhoneNumber(request.getPhoneNumber());
             System.out.println(foundWorker.getName());
             userId=foundWorker.getId();
         }
-        else if(request.getRole().equals("Employer")){
+        else if(request.getRole().equals(employer)){
             Employer foundEmployer=employerRepository.findEmployerByPhoneNumber(request.getPhoneNumber());
             System.out.println(foundEmployer.getName());
             userId=foundEmployer.getId();
@@ -79,12 +82,8 @@ public class AuthService {
                     .build();
         }
 
-        UserSession userSession = UserSession.builder()
-                .nickname(found.getNickname())
-                .state(State.LOBBY)
-                .sessionId(sessionId)
-                .build();
 
+        UserSession userSession=UserSession.of(found.getNickname(),State.LOBBY,sessionId);
         redisAuthService.saveSession(userSession);
 
         return AuthDto.SessionIdResponse.builder()
@@ -127,7 +126,7 @@ public class AuthService {
                     .build();
         }
 
-        User saved = userRepository.save(toSave);
+        //User saved = userRepository.save(toSave);
         return AuthDto.SignUpResponse.builder()
                 .user(UserDto.UserResponse.from(saved))
                 .build();
