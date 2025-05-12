@@ -9,8 +9,10 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,6 +78,31 @@ public class WorkerRequestDto {
     @Builder
     public static class CreateResponse {
         private List<Long> workerRequestIds;
+    }
+
+    @Data
+    @Builder
+    public static class WorkerRequestFilterDto {
+        private List<Long> neighborhoodIds;
+        private List<Long> jobTypeIds;
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private List<LocalDate> targetDates;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WorkerRequestInfoDto {
+        private Long workerRequestId;
+        private Long neighborhoodId;
+        private LocalDate requestDate;
+        private String workerName;
+        private String workerPhoneNumber;
+
+        @Builder.Default
+        private List<String> jobTypeNames = new ArrayList<>();
     }
 }
 

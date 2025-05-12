@@ -1,7 +1,6 @@
 package barojob.server.domain.match.controller;
 
 import barojob.server.domain.match.dto.MatchingDto;
-import barojob.server.domain.match.service.TestMatchService;
 import barojob.server.domain.match.repository.MatchRepository;
 import barojob.server.domain.match.service.MatchService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/match")
 public class TestMatchController {
 
-    private final TestMatchService testMatchService;
     private final MatchService matchService;
     private final MatchRepository matchRepository;
 
