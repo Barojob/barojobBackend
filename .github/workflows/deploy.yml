@@ -13,7 +13,8 @@ jobs:
       - name: Pull latest code
         run: |
           cd /home/ubuntu/barojobBackend
-          git pull origin CI/CD-Test
+          git fetch origin CI/CD-Test
+          git reset --hard origin/CI/CD-Test
 
       - name: Clean application.yml
         run: rm -f /home/ubuntu/barojobBackend/src/main/resources/application.yml
