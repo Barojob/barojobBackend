@@ -11,9 +11,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +33,30 @@ public class TestController {
         Page<WorkerRequestDto.ManualMatchingResponse> responses = workerRequestService.getWorkerRequests(manualMatchingRequest);
         System.out.println("메서드가 실행됐다네");
         return responses;
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        if(file.isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String fileName = UUID.randomUUID() + "_" + originalFilename;
+            Path uploadDir = Paths.get("uploads");
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            Path targetPath = uploadDir.resolve(fileName).normalize();
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            return ResponseEntity.ok(fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/worker-requests")
