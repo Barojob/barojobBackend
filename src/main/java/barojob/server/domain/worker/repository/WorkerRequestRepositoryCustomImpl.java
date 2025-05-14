@@ -2,10 +2,12 @@ package barojob.server.domain.worker.repository;
 
 import barojob.server.common.type.RequestStatus;
 import barojob.server.domain.match.dto.MatchingDataDto;
+import barojob.server.domain.worker.dto.CursorPagingWorkerRequestDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto.ManualMatchingResponse;
 import barojob.server.domain.worker.entity.QWorker;
 import barojob.server.domain.worker.entity.QWorkerRequest;
 import barojob.server.domain.worker.entity.QWorkerRequestJobType;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
@@ -30,7 +32,8 @@ import static barojob.server.domain.worker.entity.QWorkerRequestJobType.workerRe
 public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-
+    QWorkerRequest wr= QWorkerRequest.workerRequest;
+    QWorker w=QWorker.worker;
     @Override
     public Page<ManualMatchingResponse> findWorkerRequestPageByNeighborhoodAndJobType(
             Long neighborhoodId,
@@ -119,4 +122,50 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
 
         return new ArrayList<>(result.values());
     }
+    //Cursor 기반 페이징 구현
+    @Override
+    public List<CursorPagingWorkerRequestDto> findTopRequests(
+            List<Long> neighborhoodIds,
+            LocalDate requestDate,
+            String status,
+            int limit,
+            Double cursorPriorityScore,
+            Long cursorWorkerId
+    ) {
+        QWorkerRequest wr = QWorkerRequest.workerRequest;
+
+        BooleanBuilder condition = new BooleanBuilder()
+                .and(wr.neighborhoodId.in(neighborhoodIds))
+                .and(wr.requestDate.eq(requestDate))
+                .and(wr.status.eq(RequestStatus.valueOf(status)));
+
+        // 커서 기반 페이징 조건
+        if (cursorPriorityScore != null && cursorWorkerId != null) {
+            condition.and(
+                    wr.priorityScore.lt(cursorPriorityScore)
+                            .or(wr.priorityScore.eq(cursorPriorityScore)
+                                    .and(wr.worker.id.gt(cursorWorkerId)))
+            );
+        }
+
+        return queryFactory.select(Projections.constructor(
+                        CursorPagingWorkerRequestDto.class,
+                        wr.workerRequestId,
+                        wr.neighborhoodId,
+                        wr.worker.id,
+                        wr.requestDate,
+                        wr.priorityScore,
+                        wr.status.stringValue() // .stringValue()로 enum을 문자열로 변환
+                ))
+                .from(wr)
+                .where(condition)
+                .orderBy(
+                        wr.priorityScore.desc(),
+                        wr.worker.id.asc()
+                )
+                .limit(limit)
+                .fetch();
+    }
+
+
 }

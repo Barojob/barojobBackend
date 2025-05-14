@@ -5,7 +5,7 @@ import barojob.server.domain.jobType.repository.JobTypeRepository;
 import barojob.server.domain.location.entity.Neighborhood;
 import barojob.server.domain.location.repository.NeighborhoodRepository;
 import barojob.server.domain.test.TestRequestDto;
-import barojob.server.domain.worker.dto.WorkerDto;
+import barojob.server.domain.worker.dto.CursorPagingWorkerRequestDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +63,25 @@ public class WorkerRequestService {
                 .workerRequestIds(workerRequestIds)
                 .build();
     }
+    public List<CursorPagingWorkerRequestDto> getTopWorkerRequests(
+            List<Long> neighborhoodIds,
+            LocalDate requestDate,
+            String status,
+            int size,
+            Double cursorPriorityScore,
+            Long cursorWorkerId
+    ) {
+        return workerRequestRepository.findTopRequests(
+                neighborhoodIds,
+                requestDate,
+                status,
+                size,
+                cursorPriorityScore,
+                cursorWorkerId
+        );
+    }
+
+
 }
 
 
