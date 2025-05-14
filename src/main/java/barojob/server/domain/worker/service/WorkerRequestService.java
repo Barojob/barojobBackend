@@ -6,7 +6,6 @@ import barojob.server.domain.jobType.repository.JobTypeRepository;
 import barojob.server.domain.location.entity.Neighborhood;
 import barojob.server.domain.location.repository.NeighborhoodRepository;
 import barojob.server.domain.test.TestRequestDto;
-import barojob.server.domain.worker.dto.WorkerDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;

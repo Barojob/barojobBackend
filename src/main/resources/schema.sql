@@ -123,7 +123,8 @@ CREATE TABLE IF NOT EXISTS `worker_requests` (
                                                  PRIMARY KEY (`worker_request_id`,`neighborhood_id`),
                                                  KEY `idx_wr_worker_id` (`worker_id`),
                                                  KEY `idx_wr_neighborhood_status_date_loc_job_score`
-                                                     (`neighborhood_id`,`status`,`request_date`,`priority_score` DESC)
+                                                     (`neighborhood_id`,`status`,`request_date`,`priority_score` DESC),
+                                                 KEY `idx_worker_request_status_priority` (`status`, `priority_score`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci

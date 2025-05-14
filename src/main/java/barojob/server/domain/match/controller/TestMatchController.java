@@ -48,7 +48,7 @@ public class TestMatchController {
 //    }
     @PostMapping("/run")
     public ResponseEntity<MatchingDto.Response> runFullTestMatch() {
-        MatchingDto.Response response = matchService.performDailyBatchMatching(LocalDateTime.now().minusDays(1));
+        MatchingDto.Response response = matchService.performDailyBatchMatching(LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 

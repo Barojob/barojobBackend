@@ -1,8 +1,6 @@
 package barojob.server.domain.worker.entity;
 
-import barojob.server.common.timebaseentity.UserStampedEntity;
 import barojob.server.common.type.RequestStatus;
-import barojob.server.domain.location.entity.Neighborhood;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -18,6 +16,7 @@ import java.util.List;
         name = "worker_requests",
         indexes = {
                 @Index(name = "idx_wr_worker_id", columnList = "worker_id"),
+                @Index(name = "idx_worker_request_status_priority", columnList = "status, priority_score"),
                 @Index(
                         name = "idx_wr_neighborhood_status_date_loc_job_score",
                         columnList = "neighborhood_id, status, request_date, priority_score"
@@ -31,12 +30,10 @@ import java.util.List;
 @SuperBuilder
 public class WorkerRequest {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "worker_request_id")
     private Long workerRequestId;
-
 
     @Id
     @Column(name = "neighborhood_id")
