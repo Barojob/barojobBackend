@@ -1,6 +1,7 @@
 package barojob.server.domain.worker.repository;
 
 import barojob.server.domain.worker.dto.CursorPagingWorkerRequestDto;
+import barojob.server.domain.worker.dto.JTCursorPagingWorkerRequestDto;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +18,16 @@ public interface WorkerRequestRepository extends JpaRepository<WorkerRequest, Lo
             int limit,
             Double cursorPriorityScore,
             Long cursorWorkerId
+    );
+
+    List<JTCursorPagingWorkerRequestDto> findTopRequestsJT(
+            List<Long> neighborhoodIds,
+            List<LocalDate> requestDates,
+            List<String> status,
+            int limit,
+            Double cursorPriorityScore,
+            Long cursorWorkerId,
+            List<Long> jobTypeIds
     );
 
 }

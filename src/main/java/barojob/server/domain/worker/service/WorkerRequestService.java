@@ -6,6 +6,7 @@ import barojob.server.domain.location.entity.Neighborhood;
 import barojob.server.domain.location.repository.NeighborhoodRepository;
 import barojob.server.domain.test.TestRequestDto;
 import barojob.server.domain.worker.dto.CursorPagingWorkerRequestDto;
+import barojob.server.domain.worker.dto.JTCursorPagingWorkerRequestDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto;
 import barojob.server.domain.worker.entity.Worker;
 import barojob.server.domain.worker.entity.WorkerRequest;
@@ -80,7 +81,26 @@ public class WorkerRequestService {
                 cursorWorkerId
         );
     }
-
+    @Transactional
+    public List<JTCursorPagingWorkerRequestDto> getTopWorkerRequestsJT(
+            List<Long> neighborhoodIds,
+            List<LocalDate> requestDates,
+            List<String> statusList, // 변경된 부분
+            int size,
+            Double cursorPriorityScore,
+            Long cursorWorkerId,
+            List<Long> jobTypeIds
+    ) {
+        return workerRequestRepository.findTopRequestsJT(
+                neighborhoodIds,
+                requestDates,
+                statusList, // 변경된 부분
+                size,
+                cursorPriorityScore,
+                cursorWorkerId,
+                jobTypeIds
+        );
+    }
 
 }
 

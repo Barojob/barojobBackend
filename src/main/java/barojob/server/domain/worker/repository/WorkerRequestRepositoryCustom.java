@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import barojob.server.domain.worker.dto.CursorPagingWorkerRequestDto;
+import barojob.server.domain.worker.dto.JTCursorPagingWorkerRequestDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,15 @@ public interface WorkerRequestRepositoryCustom {
             Long cursorWorkerId
     );
 
-
+    List<JTCursorPagingWorkerRequestDto> findTopRequestsJT(
+            List<Long> neighborhoodIds,
+            List<LocalDate> requestDates,
+            List<String> status,
+            int limit,
+            Double cursorPriorityScore,
+            Long cursorWorkerId,
+            List<Long> jobTypeIds
+    );
 //    List<WorkerRequestDto.ManualMatchingResponse> findByCursorPagination(
 //            Long neighborhoodId,
 //            LocalDate requestDate,

@@ -1,16 +1,21 @@
 package barojob.server.domain.worker.repository;
 
 import barojob.server.common.type.RequestStatus;
+import barojob.server.domain.jobType.entity.QJobType;
 import barojob.server.domain.match.dto.MatchingDataDto;
 import barojob.server.domain.worker.dto.CursorPagingWorkerRequestDto;
+import barojob.server.domain.worker.dto.JTCursorPagingWorkerRequestDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto.ManualMatchingResponse;
 import barojob.server.domain.worker.entity.QWorker;
 import barojob.server.domain.worker.entity.QWorkerRequest;
 import barojob.server.domain.worker.entity.QWorkerRequestJobType;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,8 +25,10 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static barojob.server.domain.jobType.entity.QJobType.jobType;
 import static barojob.server.domain.worker.entity.QWorker.worker;
@@ -34,6 +41,7 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
     private final JPAQueryFactory queryFactory;
     QWorkerRequest wr= QWorkerRequest.workerRequest;
     QWorker w=QWorker.worker;
+    QJobType jt=QJobType.jobType;
     @Override
     public Page<ManualMatchingResponse> findWorkerRequestPageByNeighborhoodAndJobType(
             Long neighborhoodId,
@@ -166,6 +174,143 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                 .limit(limit)
                 .fetch();
     }
+
+//    @Override
+//    public List<JTCursorPagingWorkerRequestDto> findTopRequestsJT(
+//            List<Long> neighborhoodIds,
+//            List<LocalDate> requestDates,
+//            List<String> statusList, // 변경된 부분
+//            int limit,
+//            Double cursorPriorityScore,
+//            Long cursorWorkerId,
+//            List<Long> jobTypeIds
+//    ) {
+//        QWorkerRequest wr = QWorkerRequest.workerRequest;
+//        QWorkerRequestJobType wrjt = QWorkerRequestJobType.workerRequestJobType;
+//        QJobType jt = QJobType.jobType;
+//
+//        BooleanBuilder condition = new BooleanBuilder();
+//        condition.and(wr.neighborhoodId.in(neighborhoodIds));
+//        condition.and(wr.requestDate.in(requestDates));
+//
+//        // statusList → enum으로 변환 후 in 조건 적용
+//        if (statusList != null && !statusList.isEmpty()) {
+//            List<RequestStatus> statusEnums = statusList.stream()
+//                    .map(RequestStatus::valueOf)
+//                    .toList();
+//            condition.and(wr.status.in(statusEnums));
+//        }
+//
+//        condition.and(wrjt.jobType.jobTypeId.in(jobTypeIds));
+//
+//        if (cursorPriorityScore != null && cursorWorkerId != null) {
+//            condition.and(
+//                    wr.priorityScore.lt(cursorPriorityScore)
+//                            .or(wr.priorityScore.eq(cursorPriorityScore)
+//                                    .and(wr.worker.id.gt(cursorWorkerId)))
+//            );
+//        }
+//
+//        return queryFactory
+//                .select(Projections.constructor(
+//                        JTCursorPagingWorkerRequestDto.class,
+//                        wr.workerRequestId,
+//                        wr.neighborhoodId,
+//                        wr.worker.id,
+//                        wr.requestDate,
+//                        wr.priorityScore,
+//                        wr.status.stringValue(),
+//                        jt.jobTypeId,
+//                        jt.name
+//                ))
+//                .from(wr)
+//                .join(wr.jobTypes, wrjt)
+//                .join(wrjt.jobType, jt)
+//                .where(condition)
+//                .orderBy(
+//                        wr.priorityScore.desc(),
+//                        wr.worker.id.asc()
+//                )
+//                .limit(limit)
+//                .fetch();
+//    }
+@Override
+public List<JTCursorPagingWorkerRequestDto> findTopRequestsJT(
+        List<Long> neighborhoodIds,
+        List<LocalDate> requestDates,
+        List<String> statusList,
+        int limit,
+        Double cursorPriorityScore,
+        Long cursorWorkerId,
+        List<Long> jobTypeIds
+) {
+    QWorkerRequest wr = QWorkerRequest.workerRequest;
+    QWorkerRequestJobType wrjt = QWorkerRequestJobType.workerRequestJobType;
+    QJobType jt = QJobType.jobType;
+
+    // Query 조건 분리
+    BooleanBuilder condition = new BooleanBuilder();
+
+    // 1. 지역 필터
+    if (neighborhoodIds != null && !neighborhoodIds.isEmpty()) {
+        condition.and(
+                neighborhoodIds.size() == 1
+                        ? wr.neighborhoodId.eq(neighborhoodIds.get(0))
+                        : wr.neighborhoodId.in(neighborhoodIds)
+        );
+    }
+
+    // 2. 날짜 필터
+    if (requestDates != null && !requestDates.isEmpty()) {
+        condition.and(wr.requestDate.in(requestDates));
+    }
+
+    // 3. 상태 필터
+    if (statusList != null && !statusList.isEmpty()) {
+        condition.and(wr.status.in(
+                statusList.stream()
+                        .map(RequestStatus::valueOf)
+                        .toList()
+        ));
+    }
+
+    // 4. 직무 필터 (jobType)
+    if (jobTypeIds != null && !jobTypeIds.isEmpty()) {
+        condition.and(wrjt.jobType.jobTypeId.in(jobTypeIds));
+    }
+
+    // 5. 커서 조건
+    if (cursorPriorityScore != null && cursorWorkerId != null) {
+        condition.and(
+                wr.priorityScore.lt(cursorPriorityScore)
+                        .or(wr.priorityScore.eq(cursorPriorityScore)
+                                .and(wr.worker.id.gt(cursorWorkerId)))
+        );
+    }
+
+    return queryFactory
+            .select(Projections.constructor(
+                    JTCursorPagingWorkerRequestDto.class,
+                    wr.workerRequestId,
+                    wr.neighborhoodId,
+                    wr.worker.id,
+                    wr.requestDate,
+                    wr.priorityScore,
+                    wr.status.stringValue(),
+                    jt.jobTypeId,
+                    jt.name
+            ))
+            .from(wr)
+            .join(wr.jobTypes, wrjt)
+            .join(wrjt.jobType, jt)
+            .where(condition)
+            .orderBy(
+                    wr.priorityScore.desc(),
+                    wr.worker.id.asc()
+            )
+            .limit(limit)
+            .fetch();
+}
 
 
 }
