@@ -33,8 +33,8 @@ public enum ErrorCode {
     LOCK_ACQUIRE_FAILED(500, "Lock을 얻는데 실패했습니다."),
 
     USER_ALREADY_EXIST(400, "이미 존재하는 사용자입니다."),
-    AUTH_VERIFICATION_CODE_MISMATCH(400, "인증번호가 틀렸습니다.");
-
+    AUTH_VERIFICATION_CODE_MISMATCH(400, "인증번호가 틀렸습니다."),
+    AUTH_INVALID_PASSWORD(400,"비밀번호가 일치하지 않습니다.");
 
     private final int statusCode;
     private final String message;
