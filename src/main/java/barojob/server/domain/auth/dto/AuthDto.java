@@ -32,6 +32,22 @@ public class AuthDto {
     @NoArgsConstructor
     @Data
     @Builder
+    public static class SignInRequestNonSms{
+        private String email;
+        private String password;
+        private String role;
+        public static SignInRequestNonSms of(String email,String password,String role){
+            return SignInRequestNonSms.builder()
+                    .email(email)
+                    .password(password)
+                    .role(role)
+                    .build();
+        }
+    }
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Builder
     public static class SignInVerificateRequest{
         private String role;
         private String phoneNumber;
