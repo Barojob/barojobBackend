@@ -55,7 +55,12 @@ public class AuthController {
         authService.logout(authorization);
     }
 
+    //email, pw기반 로그인
+    @PostMapping(value = "/sign-in-nonsms",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public AuthDto.SessionIdResponse signInNonSms(@RequestBody AuthDto.SignInRequestNonSms request) {
 
+        return authService.signInNonSms(request);
+    }
     @PostMapping("/test")
     public ResponseEntity<?> test(@RequestHeader String authorization) {
         if(customRedisSessionRepository.isValidSessionId(authorization)) {
