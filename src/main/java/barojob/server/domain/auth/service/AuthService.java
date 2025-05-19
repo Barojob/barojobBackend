@@ -55,14 +55,16 @@ public class AuthService {
     @Transactional
     public AuthDto.SessionIdResponse signIn(AuthDto.SignInRequest request) {
         Long userId=null;
+
+        //Worker, Employer인지 확인 후, email을 통해 존재하는 유저인지 확인 및 userId 저장
         if(request.getRole().equals(worker)){
-            Worker foundWorker=workerRepository.findWorkerByPhoneNumber(request.getPhoneNumber());
-            System.out.println(foundWorker.getName());
+            Worker foundWorker=Optional.ofNullable(workerRepository.findWorkerByPhoneNumber(request.getPhoneNumber()))
+                    .orElseThrow(()->new RestException(ErrorCode.AUTH_USER_NOT_FOUND));
             userId=foundWorker.getId();
         }
         else if(request.getRole().equals(employer)){
-            Employer foundEmployer=employerRepository.findEmployerByPhoneNumber(request.getPhoneNumber());
-            System.out.println(foundEmployer.getName());
+            Employer foundEmployer=Optional.ofNullable(employerRepository.findEmployerByPhoneNumber(request.getPhoneNumber()))
+                    .orElseThrow(()->new RestException(ErrorCode.AUTH_USER_NOT_FOUND));
             userId=foundEmployer.getId();
         }
 
@@ -70,6 +72,53 @@ public class AuthService {
 
         User found = userRepository.findById(userId)
                 .orElseThrow(() -> new RestException(ErrorCode.AUTH_USER_NOT_FOUND));
+
+        UserDto.UserResponse userResponse = UserDto.UserResponse.from(found);
+
+        String sessionId = sessionService.createSessionId();
+
+        if(customRedisSessionRepository.isUserSessionActive(found.getNickname())) {
+            return AuthDto.SessionIdResponse.builder()
+                    .user(userResponse)
+                    .sessionId(customRedisSessionRepository.getSessionIdByNickname(found.getNickname()))
+                    .build();
+        }
+
+
+        UserSession userSession=UserSession.of(found.getNickname(),State.LOBBY,sessionId);
+        redisAuthService.saveSession(userSession);
+
+        return AuthDto.SessionIdResponse.builder()
+                .user(userResponse)
+                .sessionId(sessionId)
+                .build();
+
+    }
+    @Transactional
+    public AuthDto.SessionIdResponse signInNonSms(AuthDto.SignInRequestNonSms request) {
+        Long userId=null;
+
+        //Worker, Employer인지 확인 후, email을 통해 존재하는 유저인지 확인 및 userId 저장
+        if(request.getRole().equals(worker)){
+            Worker foundWorker=Optional.ofNullable(workerRepository.findWorkerByEmail(request.getEmail()))
+                    .orElseThrow(()->new RestException(ErrorCode.AUTH_USER_NOT_FOUND));
+            userId=foundWorker.getId();
+        }
+        else if(request.getRole().equals(employer)){
+            Employer foundEmployer=Optional.ofNullable(employerRepository.findEmployerByEmail(request.getEmail()))
+                    .orElseThrow(()->new RestException(ErrorCode.AUTH_USER_NOT_FOUND));
+            userId=foundEmployer.getId();
+        }
+
+        //userId로 User 데이터 가져오기
+        User found = userRepository.findById(userId)
+                .orElseThrow(() -> new RestException(ErrorCode.AUTH_USER_NOT_FOUND));
+
+        //password 맞는지 확인
+        boolean matches = passwordEncoder.matches(request.getPassword(), found.getPassword());
+        if(!matches){
+            throw new RestException(ErrorCode.AUTH_INVALID_PASSWORD);
+        }
 
         UserDto.UserResponse userResponse = UserDto.UserResponse.from(found);
 
