@@ -38,7 +38,7 @@ public class WorkerRequestDto {
         @NotNull(message = "근로자 ID는 필수입니다.")
         private Long workerId;
 
-        @NotEmpty(message = "요청 날짜는 필수입니다.")
+        @NotNull(message = "요청 날짜는 필수입니다.")
         @FutureOrPresent(message = "요청 날짜는 현재 또는 미래여야 합니다.")
         private LocalDate requestDate;
 

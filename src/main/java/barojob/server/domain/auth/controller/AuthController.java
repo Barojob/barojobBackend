@@ -35,13 +35,13 @@ public class AuthController {
     }
     @PostMapping(value = "/sign-in", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public AuthDto.SessionIdResponse signIn(@RequestParam String verificationCode,@RequestParam String phoneNumber,@RequestParam String role) {
-        boolean isValid=smsService.verifyCode(phoneNumber,verificationCode);
+        boolean isValid = smsService.verifyCode(phoneNumber,verificationCode);
         if(!isValid){
-            //인증번호 재입력하세요
             System.out.println("Wrong verificationCode");
             throw new RestException(ErrorCode.AUTH_VERIFICATION_CODE_MISMATCH);
 
         }
+
         AuthDto.SignInRequest request = AuthDto.SignInRequest.of(verificationCode,phoneNumber,role);
         return authService.signIn(request);
     }

@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `employer_request_details` (
 
 -- 8) worker_requests (파티셔닝 200개, neighborhoods FK 제거)
 CREATE TABLE IF NOT EXISTS `worker_requests` (
-                                                 `worker_request_id` BIGINT NOT NULL AUTO_INCREMENT,
+                                                 `worker_request_id` BIGINT NOT NULL,
                                                  `neighborhood_id` BIGINT NOT NULL,
                                                  `worker_id` BIGINT NOT NULL,
                                                  `request_date` DATE NOT NULL,
