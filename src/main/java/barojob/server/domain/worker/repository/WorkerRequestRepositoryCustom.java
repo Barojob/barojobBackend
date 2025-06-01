@@ -9,6 +9,7 @@ import barojob.server.domain.worker.dto.WorkerRequestDto;
 import barojob.server.domain.worker.entity.WorkerRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 import java.time.LocalDate;
 
@@ -19,6 +20,11 @@ public interface WorkerRequestRepositoryCustom {
             Pageable pageable
     );
   
-    //List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate);
+    List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate);
+
+    Slice<WorkerRequestDto.WorkerRequestInfoDto> findFilteredWorkerRequests(
+            WorkerRequestDto.WorkerRequestFilterDto filterDto,
+            Pageable pageable
+    );
 }
 

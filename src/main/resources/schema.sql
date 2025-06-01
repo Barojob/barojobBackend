@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `employer_request_details` (
 
 -- 8) worker_requests (파티셔닝 200개, neighborhoods FK 제거)
 CREATE TABLE IF NOT EXISTS `worker_requests` (
-                                                 `worker_request_id` BIGINT NOT NULL AUTO_INCREMENT,
+                                                 `worker_request_id` BIGINT NOT NULL,
                                                  `neighborhood_id` BIGINT NOT NULL,
                                                  `worker_id` BIGINT NOT NULL,
                                                  `request_date` DATE NOT NULL,
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `worker_requests` (
                                                  PRIMARY KEY (`worker_request_id`,`neighborhood_id`),
                                                  KEY `idx_wr_worker_id` (`worker_id`),
                                                  KEY `idx_wr_neighborhood_status_date_loc_job_score`
-                                                     (`neighborhood_id`,`status`,`request_date`,`priority_score`)
+                                                     (`neighborhood_id`,`status`,`request_date`,`priority_score` DESC)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci
@@ -139,8 +139,8 @@ CREATE TABLE IF NOT EXISTS `worker_request_job_types` (
                                                           PRIMARY KEY (`worker_request_job_type_id`),
                                                           KEY `idx_wrjt_request_job`
                                                               (`worker_request_id`,`neighborhood_id`,`job_type_id`),
-                                                          KEY `idx_wrjt_job_request`
-                                                              (`job_type_id`,`worker_request_id`,`neighborhood_id`),
+                                                          KEY `idx_wrjt_job_neigh_req`
+                                                              (`job_type_id`,`neighborhood_id`,`worker_request_id`),
                                                           KEY `idx_wrjt_job_type_id` (`job_type_id`),
                                                           UNIQUE KEY `uk_wrjt_request_job`
                                                               (`worker_request_id`,`neighborhood_id`,`job_type_id`),

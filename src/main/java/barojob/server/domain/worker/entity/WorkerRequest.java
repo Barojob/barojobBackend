@@ -3,10 +3,13 @@ package barojob.server.domain.worker.entity;
 import barojob.server.common.timebaseentity.UserStampedEntity;
 import barojob.server.common.type.RequestStatus;
 import barojob.server.domain.location.entity.Neighborhood;
+import barojob.server.domain.worker.generator.SnowflakeIdGenerator;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,11 +32,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@EntityListeners(WorkerRequest.IdInjector.class)
 public class WorkerRequest {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "worker_request_id")
     private Long workerRequestId;
 
@@ -75,5 +78,24 @@ public class WorkerRequest {
     public void addJobType(WorkerRequestJobType jobType) {
         this.jobTypes.add(jobType);
         jobType.setWorkerRequest(this);
+    }
+
+    @Component
+    public static class IdInjector {
+
+        private final SnowflakeIdGenerator idGenerator;
+
+        @Autowired
+        public IdInjector(SnowflakeIdGenerator idGenerator) {
+            this.idGenerator = idGenerator;
+        }
+
+        @PrePersist
+        public void prePersist(WorkerRequest wr) {
+            if (wr.getWorkerRequestId() == null) {
+                long newId = idGenerator.nextId();
+                wr.setWorkerRequestId(newId);
+            }
+        }
     }
 }

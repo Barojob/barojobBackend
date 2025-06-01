@@ -1,5 +1,6 @@
 package barojob.server.domain.worker.service;
 
+import barojob.server.common.dto.SliceResponseDto;
 import barojob.server.domain.jobType.entity.JobType;
 import barojob.server.domain.jobType.repository.JobTypeRepository;
 import barojob.server.domain.location.entity.Neighborhood;
@@ -13,10 +14,7 @@ import barojob.server.domain.worker.repository.WorkerRepository;
 import barojob.server.domain.worker.repository.WorkerRequestRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,29 +38,36 @@ public class WorkerRequestService {
         return workerRequestRepository.findWorkerRequestPageByNeighborhoodAndJobType(manualMatchingRequest.getNeighborhoodId(), manualMatchingRequest.getJobTypeId(), pageable);
     }
 
-//    @Transactional
-//    public WorkerRequestDto.CreateResponse createWorkerRequest(WorkerRequestDto.CreateRequest request) {
-//        Worker worker = workerRepository.findById(request.getWorkerId())
-//                .orElseThrow(() -> new EntityNotFoundException("Worker not found with id: " + request.getWorkerId()));
-//        List<Neighborhood> neighborhoods = neighborhoodRepository.findByNeighborhoodIdIn(request.getNeighborhoodIds());
-//        List<JobType> jobTypes = jobTypeRepository.findByJobTypeIdIn(request.getJobTypeIds());
-//
-//        if (workerRequestRepository.existsByWorkerAndRequestDate(worker, request.getRequestDate())) {
-//            throw new IllegalStateException("Worker already has a request for this date: " + request.getRequestDate());
-//        }
-//
-//        List<Long> workerRequestIds = new ArrayList<>();
-//        for(Neighborhood neighborhood: neighborhoods) {
-//            WorkerRequest workerRequest = request.toEntity(worker, neighborhood, jobTypes);
-//            WorkerRequest savedRequest = workerRequestRepository.save(workerRequest);
-//            workerRequestIds.add(savedRequest.getWorkerRequestId());
-//
-//        }
-//
-//        return WorkerRequestDto.CreateResponse.builder()
-//                .workerRequestIds(workerRequestIds)
-//                .build();
-//    }
+    @Transactional
+    public WorkerRequestDto.CreateResponse createWorkerRequest(WorkerRequestDto.CreateRequest request) {
+        Worker worker = workerRepository.findById(request.getWorkerId())
+                .orElseThrow(() -> new EntityNotFoundException("Worker not found with id: " + request.getWorkerId()));
+        List<Neighborhood> neighborhoods = neighborhoodRepository.findByNeighborhoodIdIn(request.getNeighborhoodIds());
+        List<JobType> jobTypes = jobTypeRepository.findByJobTypeIdIn(request.getJobTypeIds());
+
+        if (workerRequestRepository.existsByWorkerAndRequestDate(worker, request.getRequestDate())) {
+            throw new IllegalStateException("Worker already has a request for this date: " + request.getRequestDate());
+        }
+
+        List<Long> workerRequestIds = new ArrayList<>();
+        for(Neighborhood neighborhood: neighborhoods) {
+            WorkerRequest workerRequest = request.toEntity(worker, neighborhood, jobTypes);
+            WorkerRequest savedRequest = workerRequestRepository.save(workerRequest);
+            workerRequestIds.add(savedRequest.getWorkerRequestId());
+        }
+
+        return WorkerRequestDto.CreateResponse.builder()
+                .workerRequestIds(workerRequestIds)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public SliceResponseDto<WorkerRequestDto.WorkerRequestInfoDto> getWorkerRequests(
+            WorkerRequestDto.WorkerRequestFilterDto filterDto, Pageable pageable
+    ) {
+        Slice<WorkerRequestDto.WorkerRequestInfoDto> result = workerRequestRepository.findFilteredWorkerRequests(filterDto, pageable);
+        return SliceResponseDto.from(result);
+    }
 }
 
 

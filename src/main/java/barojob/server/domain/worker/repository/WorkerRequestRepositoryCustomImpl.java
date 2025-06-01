@@ -1,35 +1,35 @@
 package barojob.server.domain.worker.repository;
 
 import barojob.server.common.type.RequestStatus;
+import barojob.server.domain.jobType.entity.QJobType;
 import barojob.server.domain.match.dto.MatchingDataDto;
+import barojob.server.domain.worker.dto.WorkerRequestDto;
 import barojob.server.domain.worker.dto.WorkerRequestDto.ManualMatchingResponse;
 import barojob.server.domain.worker.entity.QWorker;
 import barojob.server.domain.worker.entity.QWorkerRequest;
 import barojob.server.domain.worker.entity.QWorkerRequestJobType;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static barojob.server.domain.jobType.entity.QJobType.jobType;
-import static barojob.server.domain.location.entity.QNeighborhood.neighborhood;
 import static barojob.server.domain.worker.entity.QWorker.worker;
 import static barojob.server.domain.worker.entity.QWorkerRequest.workerRequest;
 import static barojob.server.domain.worker.entity.QWorkerRequestJobType.workerRequestJobType;
-import static com.querydsl.jpa.JPAExpressions.selectOne;
 
 @RequiredArgsConstructor
 public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositoryCustom {
@@ -39,12 +39,13 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
     @Override
     public Page<ManualMatchingResponse> findWorkerRequestPageByNeighborhoodAndJobType(
             Long neighborhoodId,
-            Long jobTypeId,             // 단일 jobTypeId
+            Long jobTypeId,
             Pageable pageable) {
 
         QWorkerRequest wr = QWorkerRequest.workerRequest;
-        QWorker w  = QWorker.worker;
+        QWorker w = QWorker.worker;
         QWorkerRequestJobType jr = QWorkerRequestJobType.workerRequestJobType;
+
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         List<ManualMatchingResponse> contents = queryFactory
@@ -53,17 +54,21 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                         wr.workerRequestId,
                         w.name,
                         w.phoneNumber,
-                        wr.priorityScore
-                ))
-                .distinct()
+                        wr.priorityScore))
                 .from(wr)
-                .join(wr.jobTypes, jr)
                 .join(wr.worker, w)
                 .where(
                         wr.neighborhoodId.eq(neighborhoodId),
                         wr.status.eq(RequestStatus.PENDING),
                         wr.requestDate.eq(today),
-                        jr.jobType.jobTypeId.eq(jobTypeId)
+                        JPAExpressions
+                                .selectOne()
+                                .from(jr)
+                                .where(
+                                        jr.workerRequest.eq(wr),
+                                        jr.jobType.jobTypeId.eq(jobTypeId)
+                                )
+                                .exists()
                 )
                 .orderBy(wr.priorityScore.desc())
                 .offset(pageable.getOffset())
@@ -71,99 +76,129 @@ public class WorkerRequestRepositoryCustomImpl implements WorkerRequestRepositor
                 .fetch();
 
         Long total = queryFactory
-                .select(wr.workerRequestId.countDistinct())
+                .select(wr.count())
                 .from(wr)
-                .join(wr.jobTypes, jr)
                 .where(
                         wr.neighborhoodId.eq(neighborhoodId),
                         wr.status.eq(RequestStatus.PENDING),
                         wr.requestDate.eq(today),
-                        jr.jobType.jobTypeId.eq(jobTypeId)
+                        JPAExpressions
+                                .selectOne()
+                                .from(jr)
+                                .where(
+                                        jr.workerRequest.eq(wr),
+                                        jr.jobType.jobTypeId.eq(jobTypeId)
+                                )
+                                .exists()
                 )
                 .fetchOne();
 
-        return new PageImpl<>(
-                contents,
-                pageable,
-                total == null ? 0L : total
-        );
+        return new PageImpl<>(contents, pageable, total == null ? 0L : total);
     }
-//
-//    @Override
-//    public List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate) {
-//        // 1단계: 기본 정보 조회 -> 지역, 업종 정보 아직 x
-//        // Tuple을 사용하여 여러 필드를 한 번에 조회
-//        List<Tuple> basicInfoTuples = queryFactory
-//                .select(workerRequest.workerRequestId, worker.id, worker.priorityScore)
-//                .from(workerRequest)
-//                .join(workerRequest.worker, worker)
-//                .where(
-//                        workerRequest.requestDate.eq(targetDate),
-//                        workerRequest.status.in(RequestStatus.PENDING)
-//                )
-//                .fetch();
-//
-//        if (basicInfoTuples.isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//
-//        //id만 싹 뽑음
-//        List<Long> workerRequestIds = basicInfoTuples.stream()
-//                .map(t -> t.get(workerRequest.workerRequestId)) // Tuple에서 workerRequestId 추출
-//                .distinct() // 중복 제거 (혹시 모를 경우 대비)
-//                .collect(Collectors.toList());
-//
-//        // 2단계: 지역 및 직종 ID 일괄 조회 (수정된 메소드 호출)
-//        Map<Long, Set<Long>> locationIdsMap = findNeighborhoodIdsByRequestIdsGrouped(workerRequestIds);
-//        Map<Long, Set<Long>> jobTypeIdsMap = findJobTypeIdsByRequestIdsGrouped(workerRequestIds);
-//
-//        // 3단계: 정보 조합
-//        return basicInfoTuples.stream().map(tuple -> {
-//            Long wrId = tuple.get(workerRequest.workerRequestId);
-//            Long wId = tuple.get(worker.id);
-//            Double score = tuple.get(worker.priorityScore);
-//            // 기본값으로 빈 Set을 제공하여 NullPointerException 방지
-//            Set<Long> locationIds = locationIdsMap.getOrDefault(wrId, Collections.emptySet());
-//            Set<Long> jobTypeIds = jobTypeIdsMap.getOrDefault(wrId, Collections.emptySet());
-//            return new MatchingDataDto.WorkerInfo(wrId, wId, score, locationIds, jobTypeIds);
-//        }).collect(Collectors.toList());
-//    }
-//
-//    //결과: Map<요청ID, 지역ID Set>
-//    private Map<Long, Set<Long>> findNeighborhoodIdsByRequestIdsGrouped(List<Long> workerRequestIds) {
-//        if (CollectionUtils.isEmpty(workerRequestIds)) return Collections.emptyMap();
-//
-//        List<Tuple> results = queryFactory
-//                .select(workerRequestLocation.workerRequest.workerRequestId,
-//                        workerRequestLocation.neighborhood.neighborhoodId)
-//                .from(workerRequestLocation)
-//                .join(workerRequestLocation.neighborhood, neighborhood)
-//                .where(workerRequestLocation.workerRequest.workerRequestId.in(workerRequestIds))
-//                .fetch();
-//
-//        return results.stream()
-//                .collect(Collectors.groupingBy(
-//                        tuple -> tuple.get(workerRequestLocation.workerRequest.workerRequestId),
-//                        Collectors.mapping(tuple -> tuple.get(workerRequestLocation.neighborhood.neighborhoodId), Collectors.toSet())
-//                ));
-//    }
-//
-//    //결과: Map<요청ID, 직종ID Set>
-//    private Map<Long, Set<Long>> findJobTypeIdsByRequestIdsGrouped(List<Long> workerRequestIds) {
-//        if (CollectionUtils.isEmpty(workerRequestIds)) return Collections.emptyMap();
-//
-//        List<Tuple> results = queryFactory
-//                .select(workerRequestJobType.workerRequest.workerRequestId,
-//                        workerRequestJobType.jobType.jobTypeId)
-//                .from(workerRequestJobType)
-//                .join(workerRequestJobType.jobType, jobType)
-//                .where(workerRequestJobType.workerRequest.workerRequestId.in(workerRequestIds))
-//                .fetch();
-//
-//        return results.stream()
-//                .collect(Collectors.groupingBy(
-//                        tuple -> tuple.get(workerRequestJobType.workerRequest.workerRequestId),
-//                        Collectors.mapping(tuple -> tuple.get(workerRequestJobType.jobType.jobTypeId), Collectors.toSet())
-//                ));
-//    }
+
+    @Override
+    public List<MatchingDataDto.WorkerInfo> findEligibleWorkerInfoForMatching(LocalDate targetDate) {
+        Map<Long, MatchingDataDto.WorkerInfo> result = queryFactory
+                .select(
+                        workerRequest.workerRequestId,
+                        worker.id,
+                        workerRequest.priorityScore,
+                        workerRequest.neighborhoodId,
+                        jobType.jobTypeId
+                ).from(workerRequest)
+                .join(workerRequest.worker, worker)
+                .join(workerRequest.jobTypes, workerRequestJobType)
+                .join(workerRequestJobType.jobType, jobType)
+                .where(
+                        workerRequest.requestDate.eq(targetDate),
+                        workerRequest.status.eq(RequestStatus.PENDING)
+                ).transform(GroupBy.groupBy(workerRequest.workerRequestId).as(
+                        Projections.constructor(MatchingDataDto.WorkerInfo.class,
+                                workerRequest.workerRequestId,
+                                worker.id,
+                                workerRequest.priorityScore,
+                                workerRequest.neighborhoodId,
+                                GroupBy.set(jobType.jobTypeId))
+
+                ));
+
+        return new ArrayList<>(result.values());
+    }
+
+    @Override
+    public Slice<WorkerRequestDto.WorkerRequestInfoDto> findFilteredWorkerRequests(
+            WorkerRequestDto.WorkerRequestFilterDto filterDto,
+            Pageable pageable) {
+
+        QWorkerRequest wr = workerRequest;
+        QWorker w = worker;
+        QWorkerRequestJobType wrjt = workerRequestJobType;
+        QJobType jt = jobType;
+
+        JPAQuery<Tuple> query = queryFactory
+                .select(
+                        wr.workerRequestId,
+                        wr.neighborhoodId,
+                        wr.requestDate,
+                        w.name,
+                        w.phoneNumber,
+                        jt.name
+                )
+                .from(wr)
+                .join(wr.worker, w)
+                .join(wr.jobTypes, wrjt)
+                .join(wrjt.jobType, jt)
+                .where(
+                        wr.status.eq(RequestStatus.PENDING),
+                        targetDatesCondition(filterDto.getTargetDates()),
+                        neighborhoodCondition(filterDto.getNeighborhoodIds()),
+                        jobTypeCondition(filterDto.getJobTypeIds())
+                )
+                .orderBy(wr.priorityScore.desc());
+
+        query.offset(pageable.getOffset());
+        query.limit(pageable.getPageSize() + 1);
+
+        List<Tuple> result = query.fetch();
+
+        boolean hasNext = false;
+        if (result.size() > pageable.getPageSize()) {
+            result = result.subList(0, pageable.getPageSize());
+            hasNext = true;
+        }
+
+        Map<Long, WorkerRequestDto.WorkerRequestInfoDto> resultMap = new LinkedHashMap<>();
+        for (Tuple tuple : result) {
+            Long requestId = tuple.get(wr.workerRequestId);
+            String jobTypeName = tuple.get(jt.name);
+
+            WorkerRequestDto.WorkerRequestInfoDto dto = resultMap.computeIfAbsent(requestId, k ->
+                    WorkerRequestDto.WorkerRequestInfoDto.builder()
+                            .workerRequestId(tuple.get(wr.workerRequestId))
+                            .neighborhoodId(tuple.get(wr.neighborhoodId))
+                            .requestDate(tuple.get(wr.requestDate))
+                            .workerName(tuple.get(w.name))
+                            .workerPhoneNumber(tuple.get(w.phoneNumber))
+                            .jobTypeNames(new ArrayList<>())
+                            .build()
+            );
+
+            dto.getJobTypeNames().add(jobTypeName);
+        }
+        List<WorkerRequestDto.WorkerRequestInfoDto> content = new ArrayList<>(resultMap.values());
+
+        return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    private BooleanExpression jobTypeCondition(List<Long> jobTypeIds) {
+        return CollectionUtils.isEmpty(jobTypeIds) ? null : workerRequestJobType.jobType.jobTypeId.in(jobTypeIds);
+    }
+
+    private BooleanExpression neighborhoodCondition(List<Long> neighborhoodIds) {
+        return CollectionUtils.isEmpty(neighborhoodIds) ? null : workerRequest.neighborhoodId.in(neighborhoodIds);
+    }
+
+    private BooleanExpression targetDatesCondition(List<LocalDate> targetDates) {
+        return CollectionUtils.isEmpty(targetDates) ? null : workerRequest.requestDate.in(targetDates);
+    }
 }

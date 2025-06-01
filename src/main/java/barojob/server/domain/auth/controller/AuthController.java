@@ -34,6 +34,7 @@ public class AuthController {
 
     }
 
+
     //sign-in : 인증번호 검사 및 로그인
     @PostMapping(value = "/sign-in",consumes = MediaType.APPLICATION_JSON_VALUE)
     public AuthDto.SessionIdResponse signIn(@RequestBody AuthDto.SignInRequest request) {

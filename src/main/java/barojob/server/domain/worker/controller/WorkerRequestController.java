@@ -17,11 +17,11 @@ public class WorkerRequestController {
 
     private final WorkerRequestService workerRequestService;
 
-//    @PostMapping
-//    public ResponseEntity<WorkerRequestDto.CreateResponse> createWorkerRequest(
-//            @Valid @RequestBody WorkerRequestDto.CreateRequest request) {
-//        WorkerRequestDto.CreateResponse workerRequest = workerRequestService.createWorkerRequest(request);
-//
-//        return ResponseEntity.ok(workerRequest);
-//    }
+    @PostMapping
+    public ResponseEntity<WorkerRequestDto.CreateResponse> createWorkerRequest(
+            @Valid @RequestBody WorkerRequestDto.CreateRequest request) {
+        WorkerRequestDto.CreateResponse workerRequest = workerRequestService.createWorkerRequest(request);
+
+        return ResponseEntity.ok(workerRequest);
+    }
 }

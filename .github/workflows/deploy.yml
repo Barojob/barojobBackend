@@ -8,12 +8,18 @@ on:
 jobs:
   deploy:
     runs-on: [self-hosted, linux]
+
     steps:
+      - name: Cleanup Docker system
+        run: |
+          docker system prune -af
+          docker volume prune -f
 
       - name: Pull latest code
         run: |
           cd /home/ubuntu/barojobBackend
-          git pull origin CI/CD-Test
+          git fetch origin CI/CD-Test
+          git reset --hard origin/CI/CD-Test
 
       - name: Clean application.yml
         run: rm -f /home/ubuntu/barojobBackend/src/main/resources/application.yml
@@ -73,3 +79,14 @@ jobs:
             -p 8080:8080 \
             --restart unless-stopped \
             barojob-backend:latest
+
+      - name: Run Node Exporter
+        run: |
+          # 기존 컨테이너가 있으면 제거
+          sudo docker rm -f node-exporter || true
+          # host 네트워크로 실행해야 호스트 OS 메트릭 수집 가능
+          sudo docker run -d \
+            --name node-exporter \
+            --network host \
+            --restart unless-stopped \
+            prom/node-exporter:latest
