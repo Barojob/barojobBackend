@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import barojob.server.domain.user.entity.User;
+import org.hibernate.annotations.Check;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class AuthDto {
@@ -23,6 +24,22 @@ public class AuthDto {
             return SignInRequest.builder()
                     .verificationCode(verificationCode)
                     .phoneNumber(phoneNumber)
+                    .role(role)
+                    .build();
+        }
+    }
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Builder
+    public static class SignInRequestNonSms{
+        private String email;
+        private String password;
+        private String role;
+        public static SignInRequestNonSms of(String email,String password,String role){
+            return SignInRequestNonSms.builder()
+                    .email(email)
+                    .password(password)
                     .role(role)
                     .build();
         }
@@ -78,7 +95,6 @@ public class AuthDto {
                     .build();
         }
     }
-
     @AllArgsConstructor
     @NoArgsConstructor
     @Data

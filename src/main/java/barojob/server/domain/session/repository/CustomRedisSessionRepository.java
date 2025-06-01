@@ -7,7 +7,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Component
@@ -43,7 +45,7 @@ public class CustomRedisSessionRepository {
     }
 
     public void saveNicknameToSession(String nickname, String sessionId) {
-        stringRedisTemplate.opsForValue().set(NICKNAME_TO_SESSIONID_PREFIX + nickname, sessionId);
+        stringRedisTemplate.opsForValue().set(NICKNAME_TO_SESSIONID_PREFIX + nickname, sessionId,Duration.ofDays(30));
     }
 
     public String getNicknameToSessionId(String nickname) {
@@ -58,4 +60,9 @@ public class CustomRedisSessionRepository {
         return stringRedisTemplate.opsForValue().get(NICKNAME_TO_SESSIONID_PREFIX + nickname);
     }
 
+    public void setTTLToSession(String nickname, String sessionId){
+        stringRedisTemplate.expire("session:" + sessionId + ":idx", 30, TimeUnit.DAYS);
+        stringRedisTemplate.expire("session:nickname:" + nickname, 30, TimeUnit.DAYS);
+        stringRedisTemplate.expire("session", 30, TimeUnit.DAYS); // 필요에 따라 생략 가능
+    }
 }
